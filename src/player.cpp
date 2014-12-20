@@ -11516,7 +11516,7 @@ void player::do_read( item *book )
             size_t index = 1;
             for( auto iter = reading->recipes.begin();
                  iter != reading->recipes.end(); ++iter, ++index ) {
-                recipes += item::nname( iter->first->result );
+                recipes += item::nname( (*iter)->result );
                 if(index == reading->recipes.size() - 1) {
                     recipes += _(" and "); // Who gives a fuck about an oxford comma?
                 } else if(index != reading->recipes.size()) {
@@ -11691,10 +11691,8 @@ bool player::can_study_recipe(const itype &book)
     if( !book.book ) {
         return false;
     }
-    for( auto &elem : book.book->recipes ) {
-        if( !knows_recipe( elem.first ) &&
-            ( elem.first->skill_used == NULL ||
-              skillLevel( elem.first->skill_used ) >= elem.second ) ) {
+    for( auto &_recipe : book.book->recipes ) {
+        if( !knows_recipe( _recipe ) &&  _recipe->requirements.meets_skill_requirements(*this) ) {
             return true;
         }
     }
@@ -11706,8 +11704,8 @@ bool player::studied_all_recipes(const itype &book) const
     if( !book.book ) {
         return true;
     }
-    for( auto &elem : book.book->recipes ) {
-        if( !knows_recipe( elem.first ) ) {
+    for( auto &_recipe : book.book->recipes ) {
+        if( !knows_recipe( _recipe ) ) {
             return false;
         }
     }
@@ -11719,15 +11717,18 @@ bool player::try_study_recipe( const itype &book )
     if( !book.book ) {
         return false;
     }
-    for( auto iter = book.book->recipes.begin(); iter != book.book->recipes.end(); ++iter ) {
-        if (!knows_recipe(iter->first) &&
-            (iter->first->skill_used == NULL ||
-             skillLevel(iter->first->skill_used) >= iter->second)) {
-            if (iter->first->skill_used == NULL ||
-                rng(0, 4) <= (skillLevel(iter->first->skill_used) - iter->second) / 2) {
-                learn_recipe((recipe *)iter->first);
+    for( auto &_recipe: book.book->recipes ) {
+        // Unfortunately we no longer have a primary skill, and as such
+        // the book-specific recipe difficulty will be ignored.
+        // TODO: Remove said property altogether
+        bool can_learn = !knows_recipe(_recipe)
+                         && _recipe->requirements.meets_skill_requirements(*this);
+        if ( can_learn ) {
+            double learn_roll = rng_float(0.0, 1.0);
+            if ( learn_roll < _recipe->requirements.success_rate(*this) ) {
+                learn_recipe(_recipe);
                 add_msg(m_good, _("Learned a recipe for %s from the %s."),
-                                item::nname( iter->first->result ).c_str(), book.nname(1).c_str());
+                                item::nname( _recipe->result ).c_str(), book.nname(1).c_str());
                 return true;
             } else {
                 add_msg(_("Failed to learn a recipe from the %s."), book.nname(1).c_str());
@@ -12100,7 +12101,7 @@ int player::warmth(body_part bp) const
     int ret = 0, warmth = 0;
 
     // If the player is not wielding anything big, check if hands can be put in pockets
-    if( ( bp == bp_hand_l || bp == bp_hand_r ) && weapon.volume() < 2 && 
+    if( ( bp == bp_hand_l || bp == bp_hand_r ) && weapon.volume() < 2 &&
         ( temp_conv[bp] <= BODYTEMP_NORM || temp_cur[bp] <= BODYTEMP_COLD ) ) {
         ret += bestwarmth( worn, "POCKETS" );
     }
@@ -12940,19 +12941,14 @@ bool player::knows_recipe(const recipe *rec) const
     // do we know the recipe by virtue of it being autolearned?
     if( rec->autolearn ) {
         // Can the skill being trained can handle the difficulty of the task
-        bool meets_requirements = false;
-        if(rec->skill_used == NULL || get_skill_level(rec->skill_used) >= rec->difficulty){
-            meets_requirements = true;
-            //If there are required skills, insure their requirements are met, or we can't craft
-            if(!rec->required_skills.empty()){
-                for( auto iter = rec->required_skills.cbegin();
-                     iter != rec->required_skills.cend(); ++iter ){
-                    if( get_skill_level(iter->first) < iter->second ){
-                        meets_requirements = false;
-                    }
-                }
+        bool meets_requirements = true;
+        //If there are required skills, insure their requirements are met, or we can't craft
+        for( auto &requirement: rec->requirements.skills ){
+            if( get_skill_level(requirement.second.skill) < requirement.second.minimum ){
+                meets_requirements = false;
             }
         }
+
         if(meets_requirements){
             return true;
         }
@@ -12965,38 +12961,33 @@ bool player::knows_recipe(const recipe *rec) const
     return false;
 }
 
-int player::has_recipe( const recipe *r, const inventory &crafting_inv ) const
+bool player::has_recipe( const recipe *_recipe, const inventory &crafting_inv ) const
 {
     // Iterate over the nearby items and see if there's a book that has the recipe.
     const_invslice slice = crafting_inv.const_slice();
-    int difficulty = -1;
     for( auto stack = slice.cbegin(); stack != slice.cend(); ++stack ) {
         // We are only checking qualities, so we only care about the first item in the stack.
         const item &candidate = (*stack)->front();
         if( candidate.is_book() && items_identified.count(candidate.type->id) ) {
             const auto &recipes = candidate.type->book->recipes;
-            for( auto book_recipe = recipes.cbegin();
-                 book_recipe != recipes.cend(); ++book_recipe ) {
-                // Does it have the recipe, and do we meet it's requirements?
-                if( book_recipe->first->ident == r->ident &&
-                    ( book_recipe->first->skill_used == NULL ||
-                      get_skill_level(book_recipe->first->skill_used) >= book_recipe->second ) &&
-                    ( difficulty == -1 || book_recipe->second < difficulty ) ) {
-                    difficulty = book_recipe->second;
+            for( auto &book_recipe: recipes ) {
+                if( book_recipe->ident == _recipe->ident) {
+                    return true;
                 }
             }
         } else {
             if (candidate.has_flag("HAS_RECIPE")){
-                if (candidate.get_var("RECIPE") == r->ident){
-                    if (difficulty == -1) difficulty = r->difficulty;
+                if (candidate.get_var("RECIPE") == _recipe->ident){
+                    return true;
                 }
             }
         }
     }
-    return difficulty;
+
+    return false;
 }
 
-void player::learn_recipe(recipe *rec)
+void player::learn_recipe(const recipe *rec)
 {
     learned_recipes[rec->ident] = rec;
 }
@@ -13153,17 +13144,17 @@ nc_color encumb_color(int level)
  return c_red;
 }
 
-SkillLevel& player::skillLevel(std::string ident)
+SkillLevel& player::skillLevel(const std::string &skill_name)
 {
-    return _skills[Skill::skill(ident)];
+    return _skills[Skill::skill(skill_name)];
 }
 
-SkillLevel& player::skillLevel(const Skill* _skill)
+SkillLevel& player::skillLevel(const Skill *_skill)
 {
     return _skills[_skill];
 }
 
-SkillLevel player::get_skill_level(const Skill* _skill) const
+SkillLevel player::get_skill_level(const Skill *_skill) const
 {
     for( const auto &elem : _skills ) {
         if( elem.first == _skill ) {
@@ -13173,10 +13164,69 @@ SkillLevel player::get_skill_level(const Skill* _skill) const
     return SkillLevel();
 }
 
-SkillLevel player::get_skill_level(const std::string &ident) const
+SkillLevel player::get_skill_level(const std::string &skill_name) const
 {
-    const Skill* sk = Skill::skill(ident);
-    return get_skill_level(sk);
+    const Skill* skill = Skill::skill(skill_name);
+    return get_skill_level(skill);
+}
+
+
+
+// TODO: Use this
+//double adjustedCraftingSkillLevel(std::string skill)
+//{
+    //double adjusted_level = skillLevel(skill);
+
+
+//}
+
+double player::get_adjusted_skill_level(const Skill *_skill, bool include_progress) const
+{
+    auto skill_level = get_skill_level(_skill);
+    auto skill_name = _skill->name();
+    double raw_skill_level, adjusted_level;
+    if (include_progress) {
+        raw_skill_level = skill_level.level() + skill_level.exercise() / 100.0f;
+    } else {
+        raw_skill_level = get_skill_level(_skill);
+    }
+
+    adjusted_level = raw_skill_level;
+
+    // farsightedness can impose a penalty on electronics and tailoring success
+    // it's equivalent to a 2-rank electronics penalty, 1-rank tailoring
+    if( has_trait("HYPEROPIC") && !is_wearing("glasses_reading") &&
+        !is_wearing("glasses_bifocal") && !has_effect("contacts") ) {
+
+        if (skill_name == "electronics") {
+            adjusted_level -= 0.5;
+        } else if (skill_name == "tailor") {
+            adjusted_level -= 0.25;
+        }
+    }
+
+    // It's tough to craft with paws.  Fortunately it's just a matter of grip and fine-motor,
+    // not inability to see what you're doing
+    if (has_trait("PAWS") || has_trait("PAWS_LARGE")) {
+        if (has_trait("PAWS_LARGE")) {
+            adjusted_level += 0.25;
+        }
+        if (skill_name == "electronics") {
+            adjusted_level += 0.25;
+        } else if (skill_name == "tailor") {
+            adjusted_level += 0.25;
+        } else if (skill_name == "mechanics") {
+            adjusted_level += 0.25;
+        }
+    }
+
+    return adjusted_level;
+}
+
+double player::get_adjusted_skill_level(const std::string &skill_name, bool include_progress) const
+{
+    const Skill* skill = Skill::skill(skill_name);
+    return get_adjusted_skill_level(skill, include_progress);
 }
 
 void player::copy_skill_levels(const player *rhs)
@@ -13189,9 +13239,9 @@ void player::set_skill_level(const Skill* _skill, int level)
     skillLevel(_skill).level(level);
 }
 
-void player::set_skill_level(std::string ident, int level)
+void player::set_skill_level(const std::string& skill_name, int level)
 {
-    skillLevel(ident).level(level);
+    skillLevel(skill_name).level(level);
 }
 
 void player::boost_skill_level(const Skill* _skill, int level)
@@ -13199,9 +13249,9 @@ void player::boost_skill_level(const Skill* _skill, int level)
     skillLevel(_skill).level(level+skillLevel(_skill));
 }
 
-void player::boost_skill_level(std::string ident, int level)
+void player::boost_skill_level(const std::string& skill_name, int level)
 {
-    skillLevel(ident).level(level+skillLevel(ident));
+    skillLevel(skill_name).level(level+skillLevel(skill_name));
 }
 
 int player::get_melee() const
@@ -13240,7 +13290,7 @@ bool player::uncanny_dodge()
             add_msg( _("Time seems to slow down and you instinctively dodge!") );
         } else if( seen ) {
             add_msg( _("%s dodges... so fast!"), this->disp_name().c_str() );
-            
+
         }
         return true;
     }

@@ -8760,7 +8760,7 @@ bool einkpc_download_memory_card(player *p, item *eink, item *mc)
         for( auto &recipe : recipes ) {
             for( auto &elem : recipe.second ) {
 
-                const int dif = ( elem )->difficulty;
+                const int dif = ( elem )->requirements.skills["cooking"].difficulty;
 
                 if (science) {
                     if( ( elem )->cat != "CC_NONCRAFT" ) {
@@ -10213,7 +10213,8 @@ int iuse::multicooker(player *p, item *it, bool t, point pos)
                 it->active = true;
                 it->charges -= 50;
 
-                p->practice("cooking", meal->difficulty * 3); //little bonus
+                int difficulty = meal->requirements.skills.find("cooking")->second.difficulty;
+                p->practice("cooking", difficulty * 3); //little bonus
 
                 return 0;
             }

@@ -1330,7 +1330,7 @@ int set_skills(WINDOW *w, player *u, int &points)
     std::sort(sorted_skills.begin(), sorted_skills.end(), skill_display_sort);
     const int num_skills = Skill::skills.size();
     int cur_pos = 0;
-    const Skill* currentSkill = sorted_skills[cur_pos];
+    const Skill *currentSkill = sorted_skills[cur_pos];
 
     input_context ctxt("NEW_CHAR_SKILLS");
     ctxt.register_cardinal();

@@ -174,10 +174,8 @@ struct islot_book {
     int chapters;
     /**
      * What recipes can be learned from this book.
-     * Key is the recipe, value is skill level (of the main skill of the recipes) that is required
-     * to learn the recipe.
      */
-    std::map<const recipe *, int> recipes;
+    std::vector<const recipe *> recipes;
     /**
      * Special effects that can happen after the item has been read. May be empty.
      */

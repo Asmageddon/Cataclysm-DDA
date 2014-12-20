@@ -498,13 +498,13 @@ public:
      * a spiral search for an empty square around it is performed.
      */
     void place_on_map();
- const Skill* best_skill();
- void starting_weapon(npc_class type);
+    const Skill* best_skill();
+    void starting_weapon(npc_class type);
 
 // Save & load
- virtual void load_legacy(std::stringstream & dump);// Overloaded from player
- virtual void load_info(std::string data);// Overloaded from player
- virtual std::string save_info();
+    virtual void load_legacy(std::stringstream & dump);// Overloaded from player
+    virtual void load_info(std::string data);// Overloaded from player
+    virtual std::string save_info();
 
     using player::deserialize;
     virtual void deserialize(JsonIn &jsin);

@@ -3198,9 +3198,9 @@ void talk_function::set_engagement_all(npc *p)
 void talk_function::start_training(npc *p)
 {
  int cost = 0, time = 0;
- const Skill* sk_used = NULL;
+ const Skill* sk_used = nullptr;
  std::string name;
- if (p->chatbin.skill == NULL) {
+ if (p->chatbin.skill == nullptr) {
   // we're training a martial art style
   cost = -800;
   time = 30000;

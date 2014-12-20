@@ -21,7 +21,7 @@ class Skill
     public:
         static std::vector<const Skill*> skills;
         static void load_skill(JsonObject &jsobj);
-        static const Skill* skill(const std::string& ident);
+        static const Skill* skill(const std::string& skill_name);
         static const Skill* skill(size_t id);
 
         static const Skill* random_skill_with_tag(const std::string& tag);

@@ -744,7 +744,7 @@ class player : public Character, public JsonSerializer, public JsonDeserializer
         int get_wind_resistance(body_part bp) const;
 
         int adjust_for_focus(int amount);
-        void practice( const Skill* s, int amount, int cap = 99 );
+        void practice(const Skill* s, int amount, int cap = 99 );
         void practice( std::string s, int amount, int cap = 99 );
 
         void assign_activity(activity_type type, int moves, int index = -1, int pos = INT_MIN,
@@ -977,10 +977,9 @@ class player : public Character, public JsonSerializer, public JsonDeserializer
         bool can_pickup(bool print_msg) const;
 
         // Checks crafting inventory for books providing the requested recipe.
-        // Returns -1 to indicate recipe not found, otherwise difficulty to learn.
-        int has_recipe( const recipe *r, const inventory &crafting_inv ) const;
+        bool has_recipe( const recipe *r, const inventory &crafting_inv ) const;
         bool knows_recipe( const recipe *rec ) const;
-        void learn_recipe( recipe *rec );
+        void learn_recipe( const recipe *rec );
 
         bool studied_all_recipes(const itype &book) const;
 
@@ -1090,22 +1089,25 @@ class player : public Character, public JsonSerializer, public JsonDeserializer
 
         int focus_pool;
 
-        SkillLevel &skillLevel(const Skill* _skill);
-        SkillLevel &skillLevel(std::string ident);
+        SkillLevel &skillLevel(const Skill *_skill);
+        SkillLevel &skillLevel(const std::string &skill_name);
 
         // for serialization
-        SkillLevel get_skill_level(const Skill* _skill) const;
-        SkillLevel get_skill_level(const std::string &ident) const;
+        SkillLevel get_skill_level(const Skill *_skill) const;
+        SkillLevel get_skill_level(const std::string &skill_name) const;
+
+        double get_adjusted_skill_level(const Skill *_skill, bool include_progress=false) const;
+        double get_adjusted_skill_level(const std::string &skill_name, bool include_progress=false) const;
 
         void set_skill_level(const Skill* _skill, int level);
-        void set_skill_level(std::string ident, int level);
+        void set_skill_level(const std::string& skill_name, int level);
 
         void boost_skill_level(const Skill* _skill, int level);
-        void boost_skill_level(std::string ident, int level);
+        void boost_skill_level(const std::string& skill_name, int level);
 
         void copy_skill_levels(const player *rhs);
 
-        std::map<std::string, recipe *> learned_recipes;
+        std::map<std::string, const recipe *> learned_recipes;
 
         inventory inv;
         itype_id last_item;

@@ -66,15 +66,15 @@ void Skill::load_skill(JsonObject &jsobj)
     DebugLog( D_INFO, DC_ALL ) << "Loaded skill: " << name;
 }
 
-const Skill* Skill::skill(const std::string& ident)
+const Skill* Skill::skill(const std::string& skill_name)
 {
     for( auto &skill : Skill::skills ) {
-        if( ( skill )->_ident == ident ) {
+        if( ( skill )->_ident == skill_name ) {
             return skill;
         }
     }
-    if(ident != "none") {
-        debugmsg("unknown skill %s", ident.c_str());
+    if(skill_name != "none") {
+        debugmsg("unknown skill %s", skill_name.c_str());
     }
     return NULL;
 }
