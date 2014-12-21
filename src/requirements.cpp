@@ -102,35 +102,53 @@ std::string skill_requirement::get_color(const player& _player) const
     return "green";
 }
 
-void quality_requirement::load( JsonArray &jsarr )
-{
-    JsonObject quality_data = jsarr.next_object();
-    type = quality_data.get_string( "id" );
-    level = quality_data.get_int( "level", 1 );
-}
+// TODO: New loading code
+//void  tool_comp::load(JsonObject &jsobj);
+//static tool_comp tool_comp::from_json(JsonObject &jsobj);
 
-void tool_comp::load( JsonArray &ja )
-{
-    if( ja.test_string() ) {
+//void  item_comp::load(JsonObject &jsobj);
+//static item_comp item_comp::from_json(JsonObject &jsobj);
+
+//void  quality_requirement::load(JsonObject &jsobj);
+//static quality_requirement  quality_requirement::from_json(JsonObject &jsobj);
+
+template<typename T> T legacy_req_load( JsonArray &jsarr );
+
+template<> tool_comp legacy_req_load( JsonArray &jsarr ) {
+    tool_comp req = tool_comp();
+    if( jsarr.test_string() ) {
         // constructions uses this format: [ "tool", ... ]
-        type = ja.next_string();
-        count = -1;
+        req.type = jsarr.next_string();
+        req.count = -1;
     } else {
-        JsonArray comp = ja.next_array();
-        type = comp.get_string( 0 );
-        count = comp.get_int( 1 );
+        JsonArray comp = jsarr.next_array();
+        req.type = comp.get_string( 0 );
+        req.count = comp.get_int( 1 );
     }
+
+    return req;
 }
 
-void item_comp::load( JsonArray &ja )
-{
-    JsonArray comp = ja.next_array();
-    type = comp.get_string( 0 );
-    count = comp.get_int( 1 );
-    // Recoverable is true by default.
-    if(comp.size() > 2) {
+template<> item_comp legacy_req_load( JsonArray &jsarr ) {
+    item_comp req = item_comp();
+    JsonArray comp = jsarr.next_array();
+    req.type = comp.get_string( 0 );
+    req.count = comp.get_int( 1 );
+
+    if(comp.has_string(2)) {
         recoverable = comp.get_string(2) == "NO_RECOVER" ? false : true;
     }
+
+    return req;
+}
+
+template<> quality_requirement legacy_req_load( JsonArray &jsarr ) {
+    quality_requirement req = quality_requirement();
+    JsonObject quality_data = jsarr.next_object();
+    req.type = quality_data.get_string( "id" );
+    req.level = quality_data.get_int( "level", 1 );
+
+    return req;
 }
 
 template<typename T>
@@ -141,8 +159,7 @@ void requirement_data::load_obj_list(JsonArray &jsarr, std::vector< std::vector<
             std::vector<T> choices;
             JsonArray ja = jsarr.next_array();
             while (ja.has_more()) {
-                choices.push_back(T());
-                choices.back().load(ja);
+                choices.push_back(legacy_req_load<T>(ja));
             }
             if( !choices.empty() ) {
                 objs.push_back( choices );
@@ -151,7 +168,7 @@ void requirement_data::load_obj_list(JsonArray &jsarr, std::vector< std::vector<
             // tool qualities don't normally use a list of alternatives
             // each quality is mandatory.
             objs.push_back(std::vector<T>(1));
-            objs.back().back().load(jsarr);
+            objs.back()[0] = legacy_req_load<T>(jsarr);
         }
     }
 }

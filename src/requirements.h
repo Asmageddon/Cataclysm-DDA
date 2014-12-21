@@ -59,7 +59,9 @@ struct tool_comp : public component {
     tool_comp() : component() { }
     tool_comp(const itype_id &TYPE, int COUNT) : component(TYPE, COUNT) { }
 
-    void load(JsonArray &jarr);
+    void load(JsonObject &jsobj);
+    static tool_comp from_json(JsonObject &jsobj);
+
     bool has(const inventory &crafting_inv, int batch = 1) const;
     std::string to_string(int batch = 1) const;
     std::string get_color(bool has_one, const inventory &crafting_inv, int batch = 1) const;
@@ -70,7 +72,9 @@ struct item_comp : public component {
     item_comp() : component() { }
     item_comp(const itype_id &TYPE, int COUNT) : component(TYPE, COUNT) { }
 
-    void load(JsonArray &jarr);
+    void load(JsonObject &jsobj);
+    static item_comp from_json(JsonObject &jsobj);
+
     bool has(const inventory &crafting_inv, int batch = 1) const;
     std::string to_string(int batch = 1) const;
     std::string get_color(bool has_one, const inventory &crafting_inv, int batch = 1) const;
@@ -110,7 +114,9 @@ struct quality_requirement {
     {
     }
 
-    void load(JsonArray &jarr);
+    void load(JsonObject &jsobj);
+    static quality_requirement from_json(JsonObject &jsobj);
+
     // Dummy parameters that enable using this in requirement_data::print_list
     bool has(const inventory &crafting_inv, int = 0) const;
     std::string to_string(int = 0) const;
