@@ -346,17 +346,20 @@ std::string requirement_data::make_list(const inventory &crafting_inv,
         if(first) first = false; else buffer << ", ";
 
         const bool has_one = any_marked_available( comp_list );
-        for( auto req = comp_list.begin(); req != comp_list.end(); ++req ) {
-            if( req != comp_list.begin() ) {
+        bool first=true;
+        for( auto &req: comp_list ) {
+            if(first) {
+                first = false;
+            } else {
                 auto or_str = _("OR");
                 if(colored) buffer << "<color_white> " << or_str << "</color> ";
-                else buffer << or_str;
+                else buffer << " " << or_str << " ";
             }
             if (colored) {
-                const std::string col = req->get_color( has_one, crafting_inv, batch );
-                buffer << "<color_" << col << ">" << req->to_string(batch) << "</color>";
+                const std::string col = req.get_color( has_one, crafting_inv, batch );
+                buffer << "<color_" << col << ">" << req.to_string(batch) << "</color>";
             } else {
-                buffer << req->to_string(batch);
+                buffer << req.to_string(batch);
             }
         }
     }
