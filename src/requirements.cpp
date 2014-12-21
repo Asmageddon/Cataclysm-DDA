@@ -337,10 +337,14 @@ int requirement_data::print_list( WINDOW *w, int ypos, int xpos, int width, nc_c
 template<typename T>
 std::string requirement_data::make_list(const inventory &crafting_inv,
     const std::vector< std::vector<T> > &objs,
-    int batch, bool more, bool colored)
+    int batch, bool colored)
 {
     std::ostringstream buffer;
+
+    bool first = true;
     for( const auto &comp_list : objs ) {
+        if(first) first = false; else buffer << ", ";
+
         const bool has_one = any_marked_available( comp_list );
         for( auto req = comp_list.begin(); req != comp_list.end(); ++req ) {
             if( req != comp_list.begin() ) {
@@ -355,9 +359,6 @@ std::string requirement_data::make_list(const inventory &crafting_inv,
                 buffer << req->to_string(batch);
             }
         }
-        //FIXME: Reintroduce lack of a trailing colon
-        if (more) buffer << ",";
-        buffer << ", ";
     }
     return buffer.str();
 }
@@ -431,15 +432,17 @@ std::string requirement_data::requirement_list(const player& _player, const inve
 
 std::string requirement_data::required_components_list(const inventory& crafting_inv, int batch, bool colored) const
 {
-    return make_list(crafting_inv, components, batch, false, colored);
+    return make_list(crafting_inv, components, batch, colored);
 }
 
 std::string requirement_data::required_tools_list(const inventory& crafting_inv, int batch, bool colored) const
 {
     std::ostringstream buffer;
-
-    buffer << make_list(crafting_inv, qualities, batch, tools.size() > 0, colored);
-    buffer << make_list(crafting_inv, tools, batch, false, colored);
+    auto qualities_str = make_list(crafting_inv, qualities, batch, colored);
+    auto tools_str = make_list(crafting_inv, tools, batch, colored);
+    buffer << qualities_str;
+    if ((qualities_str.length() > 0) && (tools_str.length() > 0)) buffer << ", ";
+    buffer << tools_str;
 
     return buffer.str();
 }
@@ -447,7 +450,9 @@ std::string requirement_data::required_tools_list(const inventory& crafting_inv,
 std::string requirement_data::required_skills_list(const player& _player, bool colored) const
 {
     std::ostringstream skills_as_stream;
+    bool first = true;
     for( auto &iter: skills ) {
+        if(first) first = false; else skills_as_stream << ", ";
         auto requirement = iter.second;
         if (colored) {
             skills_as_stream << "<color_" << requirement.get_color(_player) << ">";
@@ -455,8 +460,6 @@ std::string requirement_data::required_skills_list(const player& _player, bool c
         } else {
             skills_as_stream << requirement.to_string();
         }
-        // FIXME: Reintroduce lack of a trailing colon
-        skills_as_stream << ", ";
     }
     return skills_as_stream.str();
 }

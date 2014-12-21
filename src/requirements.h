@@ -257,7 +257,7 @@ struct requirement_data {
         template<typename T>
         static std::string make_list(const inventory &crafting_inv,
                                      const std::vector< std::vector<T> > &objs,
-                                     int batch = 1, bool more=false, bool colored=true);
+                                     int batch = 1, bool colored=true);
         template<typename T>
         static bool remove_item(const std::string &type, std::vector< std::vector<T> > &vec);
         template<typename T>
