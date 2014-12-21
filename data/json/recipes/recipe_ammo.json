@@ -12,7 +12,7 @@
   "autolearn": false,
   "book_learn": [[ "textbook_anarch", 3 ] , [ "recipe_bullets", 3 ]],
   "qualities" : [
-    {"id":"SCREW","level":1,"amount":1}
+    {"id":"SCREW","level":1}
   ], "components": [
     [
       [ "superglue", 1 ]
@@ -37,7 +37,7 @@
   "autolearn": false,
   "book_learn": [[ "textbook_gaswarfare", 4 ] , [ "manual_launcher", 4 ]],
   "qualities" : [
-    {"id":"SCREW","level":1,"amount":1}
+    {"id":"SCREW","level":1}
   ], "components": [
     [
       [ "acidbomb", 1 ]
@@ -59,9 +59,9 @@
   "autolearn": false,
   "book_learn": [[ "recipe_lab_elec", 7 ] , [ "recipe_mininuke_launch", 5]],
   "qualities":[
-    {"id":"SAW_M","level":1,"amount":1},
-    {"id":"SCREW","level":1,"amount":1},
-    {"id":"WRENCH","level":1,"amount":1}
+    {"id":"SAW_M","level":1},
+    {"id":"SCREW","level":1},
+    {"id":"WRENCH","level":1}
   ], "tools": [
     [
       [ "boltcutters", -1 ],
@@ -93,7 +93,7 @@
   "reversible": false,
   "autolearn": true,
   "qualities":[
-    {"id":"CUT","level":1,"amount":1}
+    {"id":"CUT","level":1}
   ],
   "components": [
     [
@@ -112,7 +112,7 @@
   "reversible": false,
   "autolearn": true,
   "qualities":[
-    {"id":"HAMMER","level":1,"amount":1}
+    {"id":"HAMMER","level":1}
   ], "components": [
     [
       [ "rock", 1 ]
@@ -191,7 +191,7 @@
   "reversible" : false,
   "autolearn" : true,
   "qualities":[
-    {"id":"CUT","level":1,"amount":1}
+    {"id":"CUT","level":1}
   ],
   "components" : [
     [
@@ -215,7 +215,7 @@
   "autolearn" : true,
   "book_learn" : [[ "recipe_arrows", 2 ] , [ "pocket_survival", 2] , [ "manual_archery", 1]],
   "qualities":[
-    {"id":"CUT","level":1,"amount":1}
+    {"id":"CUT","level":1}
   ],
   "components" : [
     [
@@ -239,8 +239,8 @@
   "autolearn" : true,
   "book_learn" : [[ "recipe_arrows", 1 ]],
   "qualities":[
-    {"id":"HAMMER","level":1,"amount":1},
-    {"id":"SAW_M","level":1,"amount":1}
+    {"id":"HAMMER","level":1},
+    {"id":"SAW_M","level":1}
   ], "components" : [
     [
       [ "scrap", 6 ],
@@ -260,7 +260,7 @@
   "autolearn" : true,
   "book_learn" : [[ "recipe_arrows", 1 ] , [ "manual_archery", 2] , [ "book_archery", 2]],
   "qualities":[
-    {"id":"HAMMER","level":1,"amount":1}
+    {"id":"HAMMER","level":1}
   ], "components" : [
     [
       [ "steel_chunk", 1 ],
@@ -280,7 +280,7 @@
   "autolearn" : true,
   "book_learn" : [[ "recipe_arrows", 1 ] , [ "manual_archery", 2 ] , [ "book_archery", 2]],
   "qualities":[
-    {"id":"CUT","level":1,"amount":1}
+    {"id":"CUT","level":1}
   ],
   "components" : [
     [
@@ -332,7 +332,7 @@
     {"id":"COOK","level":2,"amount":1}
   ],
   "components" : [
-    [ 
+    [
       [ "water", 1 ],
       [ "water_clean", 1 ]
     ],
@@ -350,7 +350,7 @@
   "reversible" : false,
   "autolearn" : true,
   "qualities":[
-    {"id":"CUT","level":1,"amount":1}
+    {"id":"CUT","level":1}
   ],
   "tools" : [
     [
@@ -374,8 +374,8 @@
   "reversible" : false,
   "autolearn" : true,
   "qualities":[
-    {"id":"CUT","level":1,"amount":1},
-    {"id":"HAMMER","level":1,"amount":1}
+    {"id":"CUT","level":1},
+    {"id":"HAMMER","level":1}
   ],
   "components" : [
     [
@@ -411,7 +411,7 @@
   "autolearn" : true,
   "book_learn" : [[ "recipe_arrows", 1 ] , [ "pocket_survival", 1]],
   "qualities":[
-    {"id":"CUT","level":1,"amount":1}
+    {"id":"CUT","level":1}
   ],
   "components" : [
     [
@@ -447,7 +447,7 @@
   "autolearn" : true,
   "book_learn" : [[ "recipe_arrows", 2 ] , [ "book_archery", 2]],
   "qualities":[
-    {"id":"CUT","level":1,"amount":1}
+    {"id":"CUT","level":1}
   ],
   "components" : [
     [
@@ -477,7 +477,7 @@
   "autolearn" : true,
   "book_learn" : [[ "recipe_arrows", 1 ] , [ "book_archery", 3]],
   "qualities":[
-    {"id":"CUT","level":1,"amount":1}
+    {"id":"CUT","level":1}
   ],
   "components" : [
     [
@@ -507,7 +507,7 @@
   "autolearn" : true,
   "book_learn" : [[ "recipe_arrows", 1 ] , [ "pocket_survival", 1], [ "book_archery", 2]],
   "qualities":[
-    {"id":"CUT","level":1,"amount":1}
+    {"id":"CUT","level":1}
   ],
   "components" : [
     [
@@ -537,7 +537,7 @@
   "autolearn" : false,
   "book_learn" : [[ "recipe_arrows", 5 ]],
   "qualities":[
-    {"id":"CUT","level":1,"amount":1}
+    {"id":"CUT","level":1}
   ],
   "components" : [
     [
@@ -579,7 +579,7 @@
   "autolearn" : true,
   "book_learn" : [[ "recipe_arrows", 3 ]],
   "qualities":[
-    {"id":"CUT","level":1,"amount":1}
+    {"id":"CUT","level":1}
   ],
   "components" : [
     [
@@ -612,8 +612,8 @@
   "autolearn" : true,
   "book_learn" : [[ "recipe_arrows", 3 ]],
   "qualities":[
-    {"id":"HAMMER","level":1,"amount":1},
-    {"id":"SAW_M","level":1,"amount":1}
+    {"id":"HAMMER","level":1},
+    {"id":"SAW_M","level":1}
   ], "components" : [
     [
       [ "shaft_metal", 10 ]
@@ -661,7 +661,7 @@
   "reversible" : false,
   "autolearn" : true,
   "qualities":[
-    {"id":"CUT","level":1,"amount":1}
+    {"id":"CUT","level":1}
   ], "tools" : [
     [
       [ "fire", -1 ]
@@ -711,8 +711,8 @@
   "reversible" : false,
   "autolearn" : true,
   "qualities":[
-    {"id":"CUT","level":1,"amount":1},
-    {"id":"HAMMER","level":1,"amount":1}
+    {"id":"CUT","level":1},
+    {"id":"HAMMER","level":1}
   ],
   "components" : [
     [
@@ -778,7 +778,7 @@
   "autolearn" : true,
   "book_learn" : [[ "recipe_arrows", 3 ]],
   "qualities" : [
-    {"id":"CUT","level":1,"amount":1}
+    {"id":"CUT","level":1}
   ],
   "components" : [
     [
@@ -812,9 +812,9 @@
   "autolearn" : true,
   "book_learn" : [[ "recipe_arrows", 4 ]],
   "qualities" : [
-    {"id":"CUT","level":1,"amount":1},
-    {"id":"HAMMER","level":1,"amount":1},
-    {"id":"SAW_M","level":1,"amount":1}
+    {"id":"CUT","level":1},
+    {"id":"HAMMER","level":1},
+    {"id":"SAW_M","level":1}
   ], "components" : [
     [
       [ "superglue", 10 ],
@@ -848,8 +848,8 @@
   "autolearn" : false,
   "book_learn" : [[ "recipe_arrows", 6 ], [ "textbook_anarch", 4 ] , ["recipe_bullets" , 7]],
   "qualities":[
-    {"id":"SAW_M","level":1,"amount":1},
-    {"id":"SCREW","level":1,"amount":1}
+    {"id":"SAW_M","level":1},
+    {"id":"SCREW","level":1}
   ], "components" : [
     [
       [ "exploding_arrow_warhead", 5 ]
@@ -877,8 +877,8 @@
   "autolearn" : false,
   "book_learn": [[ "textbook_anarch", 4 ] , ["recipe_bullets" , 7]],
   "qualities":[
-    {"id":"HAMMER","level":1,"amount":1},
-    {"id":"SCREW","level":1,"amount":1}
+    {"id":"HAMMER","level":1},
+    {"id":"SCREW","level":1}
   ], "tools" : [
     [
       [ "soldering_iron", 10 ],
@@ -918,7 +918,7 @@
   "reversible": false,
   "autolearn": true,
   "qualities" : [
-    {"id":"CUT","level":1,"amount":1}
+    {"id":"CUT","level":1}
   ],
   "components": [
     [
@@ -942,8 +942,8 @@
   "autolearn": true,
   "book_learn" : [[ "recipe_arrows", 2 ]],
   "qualities":[
-    {"id":"HAMMER","level":1,"amount":1},
-    {"id":"SAW_M","level":1,"amount":1}
+    {"id":"HAMMER","level":1},
+    {"id":"SAW_M","level":1}
   ], "components": [
       [
         ["scrap", 6],
@@ -963,7 +963,7 @@
   "autolearn": false,
   "book_learn" : [[ "recipe_arrows", 7 ], [ "textbook_anarch", 4 ] , ["recipe_bullets" , 7]],
   "qualities":[
-    {"id":"SAW_M","level":1,"amount":1}
+    {"id":"SAW_M","level":1}
   ], "components": [
     [
         ["bolt_metal", 1],
@@ -993,8 +993,8 @@
   "reversible": false,
   "autolearn": true,
   "qualities" : [
-    {"id":"CUT","level":1,"amount":1},
-    {"id":"HAMMER","level":1,"amount":1}
+    {"id":"CUT","level":1},
+    {"id":"HAMMER","level":1}
   ], "components": [
     [
       [ "stick", 1 ],
@@ -1017,8 +1017,8 @@
   "reversible": false,
   "autolearn": true,
   "qualities":[
-    {"id":"HAMMER","level":1,"amount":1},
-    {"id":"SAW_M","level":1,"amount":1}
+    {"id":"HAMMER","level":1},
+    {"id":"SAW_M","level":1}
   ], "components": [
       [
         ["steel_chunk", 3],
@@ -2471,9 +2471,9 @@
   "time": 17500,
   "reversible": false,
   "autolearn": false,
-  "book_learn": [["recipe_bullets" , 2 ] , [ "manual_shotgun", 2 ]],  
+  "book_learn": [["recipe_bullets" , 2 ] , [ "manual_shotgun", 2 ]],
   "qualities":[
-    {"id":"SAW_M","level":1,"amount":1}
+    {"id":"SAW_M","level":1}
   ],
   "tools": [
     [
@@ -2523,7 +2523,7 @@
   "autolearn": false,
   "book_learn": [["recipe_bullets" , 2 ] , [ "manual_shotgun", 2 ]],
   "qualities":[
-  {"id":"SAW_M","level":1,"amount":1}
+  {"id":"SAW_M","level":1}
   ],
   "tools": [
     [
@@ -2564,9 +2564,9 @@
   "time": 500,
   "reversible": false,
   "autolearn": true,
-  "book_learn": [["recipe_bullets" , 2 ] , [ "manual_shotgun", 2 ]],  
+  "book_learn": [["recipe_bullets" , 2 ] , [ "manual_shotgun", 2 ]],
   "qualities":[
-    {"id":"SAW_M","level":1,"amount":1}
+    {"id":"SAW_M","level":1}
   ],
   "tools": [
     [
@@ -2605,7 +2605,7 @@
   "autolearn": true,
   "book_learn": [["recipe_bullets" , 2 ] , [ "manual_shotgun", 2 ]],
   "qualities":[
-  {"id":"SAW_M","level":1,"amount":1}
+  {"id":"SAW_M","level":1}
   ],
   "tools": [
     [
@@ -2638,7 +2638,7 @@
   "autolearn": true,
   "book_learn": [["recipe_bullets" , 2 ] , [ "manual_shotgun", 2 ]],
   "qualities":[
-  {"id":"SAW_M","level":1,"amount":1}
+  {"id":"SAW_M","level":1}
   ],
   "tools": [
     [
@@ -2744,7 +2744,7 @@
   "autolearn": false,
   "book_learn": [[ "textbook_anarch", 4 ] , ["recipe_bullets" , 2 ] , [ "manual_shotgun", 3 ] , [ "manual_pistol", 3 ], [ "adv_chemistry", 3 ] , [ "textbook_chemistry", 3 ]],
   "qualities":[
-    {"id":"CHEM","level":2,"amount":1}
+    {"id":"CHEM","level":2}
   ], "tools": [
     [
       [ "chemistry_set", 50 ],
@@ -2777,7 +2777,7 @@
   "autolearn": false,
   "book_learn": [[ "textbook_anarch", 6 ] , ["recipe_bullets" , 5 ]],
   "qualities":[
-    {"id":"CHEM","level":2,"amount":1}
+    {"id":"CHEM","level":2}
   ], "tools": [
     [
       [ "chemistry_set", 50 ],
@@ -2809,7 +2809,7 @@
   "autolearn": false,
   "book_learn": [[ "recipe_caseless", 5 ] , ["recipe_bullets" , 9 ] , ["manual_pistol", 10 ] , ["manual_rifle", 10 ]],
   "qualities":[
-    {"id":"CHEM","level":2,"amount":1}
+    {"id":"CHEM","level":2}
   ], "tools": [
     [
       [ "chemistry_set", 50 ],
@@ -2856,7 +2856,7 @@
   "autolearn": false,
   "book_learn": [[ "recipe_caseless", 5 ] , ["recipe_bullets" , 9 ] , ["manual_pistol", 10 ] , ["manual_rifle", 10 ]],
   "qualities":[
-    {"id":"CHEM","level":2,"amount":1}
+    {"id":"CHEM","level":2}
   ], "tools": [
     [
       [ "chemistry_set", 50 ],
@@ -2906,7 +2906,7 @@
   "autolearn": false,
   "book_learn": [[ "recipe_caseless", 5 ] , ["recipe_bullets" , 9 ] , ["manual_shotgun", 10 ]],
   "qualities":[
-    {"id":"CHEM","level":2,"amount":1}
+    {"id":"CHEM","level":2}
   ], "tools": [
     [
       [ "chemistry_set", 50 ],
@@ -2953,7 +2953,7 @@
   "autolearn": false,
   "book_learn": [[ "recipe_caseless", 5 ] , ["recipe_bullets" , 9 ] , ["manual_shotgun", 10 ]],
   "qualities":[
-    {"id":"CHEM","level":2,"amount":1}
+    {"id":"CHEM","level":2}
   ], "tools": [
     [
       [ "chemistry_set", 50 ],
@@ -2999,7 +2999,7 @@
   "autolearn": false,
   "book_learn": [[ "recipe_caseless", 5 ] , ["recipe_bullets" , 9 ] , ["manual_shotgun", 10 ]],
   "qualities":[
-    {"id":"CHEM","level":2,"amount":1}
+    {"id":"CHEM","level":2}
   ], "tools": [
     [
       [ "chemistry_set", 50 ],
@@ -3047,7 +3047,7 @@
     "autolearn": false,
     "book_learn": [[ "manual_pistol", 3 ] , ["recipe_bullets" , 2]],
     "qualities":[
-    {"id":"HAMMER","level":3,"amount":1}
+    {"id":"HAMMER","level":3}
     ], "tools": [
      [
       ["swage", -1]
@@ -3080,7 +3080,7 @@
     "autolearn": false,
     "book_learn": [[ "manual_pistol", 3 ] , ["recipe_bullets" , 2]],
     "qualities":[
-    {"id":"HAMMER","level":3,"amount":1}
+    {"id":"HAMMER","level":3}
     ], "tools": [
      [
       ["swage", -1]
@@ -3113,7 +3113,7 @@
     "autolearn": false,
     "book_learn": [[ "mag_rifle", 3 ] , ["recipe_bullets" , 2]],
     "qualities":[
-    {"id":"HAMMER","level":3,"amount":1}
+    {"id":"HAMMER","level":3}
     ], "tools": [
      [
       ["swage", -1]
@@ -3146,7 +3146,7 @@
     "autolearn": false,
     "book_learn": [[ "mag_rifle", 3 ] , ["recipe_bullets" , 2]],
     "qualities":[
-    {"id":"HAMMER","level":3,"amount":1}
+    {"id":"HAMMER","level":3}
     ], "tools": [
      [
       ["swage", -1]
@@ -3179,7 +3179,7 @@
     "autolearn": false,
     "book_learn": [[ "manual_shotgun", 3 ] , ["recipe_bullets" , 2]],
     "qualities":[
-    {"id":"HAMMER","level":3,"amount":1}
+    {"id":"HAMMER","level":3}
     ], "tools": [
      [
       ["swage", -1]
@@ -3241,7 +3241,7 @@
   "autolearn": false,
   "book_learn": [[ "recipe_lab_elec", 4 ]],
   "qualities" : [
-    {"id":"SCREW","level":1,"amount":1}
+    {"id":"SCREW","level":1}
   ], "components": [
     [
       [ "superglue", 1 ]
@@ -3326,8 +3326,8 @@
   "reversible": false,
   "autolearn": true,
   "qualities":[
-    {"id":"HAMMER","level":1,"amount":1},
-    {"id":"SAW_M","level":1,"amount":1}
+    {"id":"HAMMER","level":1},
+    {"id":"SAW_M","level":1}
   ], "components": [
     [
       ["rebar", 2]
@@ -3344,7 +3344,7 @@
   "reversible": false,
   "autolearn": true,
   "qualities":[
-    {"id":"HAMMER","level":3,"amount":1}
+    {"id":"HAMMER","level":3}
   ], "tools": [
      [
       ["tongs", -1]
@@ -3771,7 +3771,7 @@
     "autolearn": true,
     "book_learn": [[ "manual_rifle", 2 ] , [ "manual_pistol", 2 ] , [ "recipe_bullets", 2 ]],
     "qualities":[
-      {"id":"CUT","level":1,"amount":1}
+      {"id":"CUT","level":1}
     ],
     "components": [
       [
@@ -3805,7 +3805,7 @@
     "autolearn": false,
     "book_learn": [[ "manual_pistol", 3 ] , [ "recipe_bullets", 3 ]],
     "qualities":[
-      {"id":"CUT","level":1,"amount":1}
+      {"id":"CUT","level":1}
     ],
     "components": [
       [
@@ -3840,7 +3840,7 @@
     "autolearn": false,
     "book_learn": [[ "manual_pistol", 3 ] , [ "recipe_bullets", 3 ]],
     "qualities":[
-      {"id":"CUT","level":1,"amount":1}
+      {"id":"CUT","level":1}
     ],
     "components": [
       [
@@ -3919,7 +3919,7 @@
     "autolearn": false,
     "book_learn": [["mag_survival", 1], ["textbook_survival", 1], ["survival_book", 1], ["pocket_survival", 1]],
     "qualities" : [
-      {"id":"CUT","level":1,"amount":1}
+      {"id":"CUT","level":1}
     ],
     "components": [
       [
@@ -3939,7 +3939,7 @@
     "autolearn": false,
     "book_learn": [["mag_survival", 1], ["textbook_survival", 1], ["survival_book", 1], ["pocket_survival", 1]],
     "qualities" : [
-      {"id":"CUT","level":1,"amount":1}
+      {"id":"CUT","level":1}
     ],
     "components": [
       [
@@ -3959,7 +3959,7 @@
     "autolearn": false,
     "book_learn": [["mag_survival", 1], ["textbook_survival", 1], ["survival_book", 1], ["pocket_survival", 1]],
     "qualities" : [
-      {"id":"CUT","level":1,"amount":1}
+      {"id":"CUT","level":1}
     ],
     "components": [
       [
@@ -3980,7 +3980,7 @@
     "autolearn": false,
     "book_learn": [["mag_survival", 1], ["textbook_survival", 1], ["survival_book", 1], ["pocket_survival", 1]],
     "qualities" : [
-      {"id":"CUT","level":1,"amount":1}
+      {"id":"CUT","level":1}
     ],
     "components": [
       [
@@ -4048,7 +4048,7 @@
   "reversible": false,
   "autolearn": true,
   "qualities":[
-    {"id":"HAMMER","level":3,"amount":1}
+    {"id":"HAMMER","level":3}
   ], "tools": [
     [ ["tongs", -1]  ],
     [ ["chisel", -1] ],
