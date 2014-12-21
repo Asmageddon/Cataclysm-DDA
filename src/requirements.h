@@ -164,7 +164,7 @@ struct requirement_data {
          */
         void load(JsonObject &jsobj);
         /**
-         * Returns a list of components/tools/qualities that are not available,
+         * Returns a list of components/tools/qualities/skills that are not available,
          * nicely formatted for popup window or similar.
          */
         std::string list_missing() const;
@@ -184,18 +184,56 @@ struct requirement_data {
 
         bool can_make_with_inventory(const inventory &crafting_inv, int batch = 1) const;
 
+        /**
+         * Checks if the player or NPC meets minimum skill requirements.
+         */
         bool meets_skill_requirements(const player& _player) const;
+        /**
+         * Computes the success rate based on skill requirements
+         *
+         * The formula used is `a*b*c*d` where individual terms are `(individual_rate ^ (1 / n_skills))`
+         * Individual skill formula is `base_rate ^ (2^adjusted_difficulty)`, where adjusted
+         * difficulty is the difference between player skill level plus stat bonus, and the optional difficulty modifier.
+         *
+         * @param _player The player object representing the player or an NPC
+         * @param difficulty_modifier Difficulty modifier, 1.0 is equivalent of one skill level, or 8 stat points.
+         * @returns Value representing success probability. If difficulty is 0, returns 1.0, if minimum requirements are not met, returns 0.0
+         */
         double success_rate(const player& _player, double difficulty_modifier=0.0f) const;
 
+        /**
+         * Prints component requirement information for purposes of the crafting screen.
+         */
         int print_components(WINDOW *w, int ypos, int xpos, int width, nc_color col,
                              const inventory &crafting_inv, int batch = 1) const;
+        /**
+         * Prints tool requirement information for purposes of the crafting screen.
+         */
         int print_tools(WINDOW *w, int ypos, int xpos, int width, nc_color col,
                         const inventory &crafting_inv, int batch = 1) const;
+        /**
+         * Prints skill requirement information for purposes of the crafting screen.
+         */
         int print_skills(WINDOW *w, int ypos, int xpos, int width, nc_color col,
                         const player& _player) const;
 
+        /**
+         * Prepares a string representing all requirements, colored by availability.
+         *
+         * Red for unmet requirements.
+         * Yellow for partially met skill requirements.
+         * Green for met requirements.
+         * Gray for requirement options met by another item.
+         *
+         * @returns A formatted string representing requirements
+         */
+        std::string requirement_list(const player& _player, const inventory& crafting_inv, int batch = 1) const;
+
+        /** @returns List of required components. See `requirement_data::requirement_list` for more info */
         std::string required_components_list(const inventory& crafting_inv, int batch = 1) const;
-        std::string required_tools_list(const inventory& crafting_inv) const;
+        /** @returns List of required tools. See `requirement_data::requirement_list` for more info */
+        std::string required_tools_list(const inventory& crafting_inv, int batch = 1) const;
+        /** @returns List of required skills. See `requirement_data::requirement_list` for more info */
         std::string required_skills_list(const player& _player) const;
 
     private:
@@ -215,6 +253,9 @@ struct requirement_data {
         template<typename T>
         static int print_list(WINDOW *w, int ypos, int xpos, int width, nc_color col,
                               const inventory &crafting_inv, const std::vector< std::vector<T> > &objs, int batch = 1);
+        template<typename T>
+        static std::string make_list(const inventory &crafting_inv,
+                                     const std::vector< std::vector<T> > &objs, int batch = 1, bool more=false);
         template<typename T>
         static bool remove_item(const std::string &type, std::vector< std::vector<T> > &vec);
         template<typename T>

@@ -336,6 +336,26 @@ int requirement_data::print_list( WINDOW *w, int ypos, int xpos, int width, nc_c
     return ypos - oldy;
 }
 
+template<typename T>
+std::string requirement_data::make_list(const inventory &crafting_inv, const std::vector< std::vector<T> > &objs, int batch, bool more)
+{
+    std::ostringstream buffer;
+    for( const auto &comp_list : objs ) {
+        const bool has_one = any_marked_available( comp_list );
+        for( auto req = comp_list.begin(); req != comp_list.end(); ++req ) {
+            if( req != comp_list.begin() ) {
+                buffer << "<color_white> " << _( "OR" ) << "</color> ";
+            }
+            const std::string col = req->get_color( has_one, crafting_inv, batch );
+            buffer << "<color_" << col << ">" << req->to_string(batch) << "</color>";
+        }
+        //FIXME: Reintroduce lack of a trailing colon
+        if (more) buffer << ",";
+        buffer << ", ";
+    }
+    return buffer.str();
+}
+
 int requirement_data::print_tools( WINDOW *w, int ypos, int xpos, int width, nc_color col,
                                const inventory &crafting_inv, int batch ) const
 {
@@ -353,6 +373,7 @@ int requirement_data::print_tools( WINDOW *w, int ypos, int xpos, int width, nc_
     return ypos - oldy;
 }
 
+// Utility function for printing a vector of vectors of component requirements
 int requirement_data::print_skills(WINDOW *w, int ypos, int xpos, int width, nc_color col,
                                 const player& _player) const
 {
@@ -380,24 +401,53 @@ int requirement_data::print_skills(WINDOW *w, int ypos, int xpos, int width, nc_
     return ypos - oldy;
 }
 
-// TODO: Listings of requirements
-// std::string requirement_data::required_components_list(const inventory& crafting_inv, int batch = 1) const;
-// std::string requirement_data::required_tools_list(const inventory& crafting_inv) const;
+// Utility function for printing a vector of vectors of component requirements
+std::string requirement_data::requirement_list(const player& _player, const inventory& crafting_inv, int batch) const
+{
+    std::ostringstream buffer;
+
+    std::string components_str = required_components_list(crafting_inv, batch);
+    std::string tools_str = required_tools_list(crafting_inv, batch);
+    std::string skills_str = required_skills_list(_player);
+
+    buffer << components_str;
+    if (components_str.length() > 0 && (tools_str.length() > 0 || skills_str.length() > 0) ) {
+        buffer << ", ";
+    }
+    buffer << tools_str;
+    if (tools_str.length() > 0 && skills_str.length() > 0 ) {
+        buffer << ", ";
+    }
+    buffer << skills_str;
+
+    return buffer.str()
+}
+
+std::string requirement_data::required_components_list(const inventory& crafting_inv, int batch) const
+{
+    return make_list(crafting_inv, components, batch, false);
+}
+
+std::string requirement_data::required_tools_list(const inventory& crafting_inv, int batch) const
+{
+    std::ostringstream buffer;
+
+    buffer << make_list(crafting_inv, qualities, batch, tools.size() > 0);
+    buffer << make_list(crafting_inv, tools, batch, false);
+
+    return buffer.str();
+}
 
 std::string requirement_data::required_skills_list(const player& _player) const
 {
     std::ostringstream skills_as_stream;
-    if(!skills.empty()) {
-        for( auto &iter: skills ) {
-            auto requirement = iter.second;
-            skills_as_stream << "<color_" << requirement.get_color(_player) << ">";
-            skills_as_stream << requirement.to_string() << "</color>";
+    for( auto &iter: skills ) {
+        auto requirement = iter.second;
+        skills_as_stream << "<color_" << requirement.get_color(_player) << ">";
+        skills_as_stream << requirement.to_string() << "</color>";
 
-            // FIXME: Reintroduce lack of a trailing colon
-            skills_as_stream << ", ";
-        }
-    } else {
-        skills_as_stream << _("NONE");
+        // FIXME: Reintroduce lack of a trailing colon
+        skills_as_stream << ", ";
     }
     return skills_as_stream.str();
 }
