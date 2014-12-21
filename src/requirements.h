@@ -218,23 +218,24 @@ struct requirement_data {
                         const player& _player) const;
 
         /**
-         * Prepares a string representing all requirements, colored by availability.
+         * Prepares a string representing all requirements, optionally(and by default) colored by availability.
          *
          * Red for unmet requirements.
          * Yellow for partially met skill requirements.
          * Green for met requirements.
          * Gray for requirement options met by another item.
          *
+         * @param colored - Color the output?
          * @returns A formatted string representing requirements
          */
-        std::string requirement_list(const player& _player, const inventory& crafting_inv, int batch = 1) const;
+        std::string requirement_list(const player& _player, const inventory& crafting_inv, int batch = 1, bool colored=true) const;
 
         /** @returns List of required components. See `requirement_data::requirement_list` for more info */
-        std::string required_components_list(const inventory& crafting_inv, int batch = 1) const;
+        std::string required_components_list(const inventory& crafting_inv, int batch = 1, bool colored=true) const;
         /** @returns List of required tools. See `requirement_data::requirement_list` for more info */
-        std::string required_tools_list(const inventory& crafting_inv, int batch = 1) const;
+        std::string required_tools_list(const inventory& crafting_inv, int batch = 1, bool colored=true) const;
         /** @returns List of required skills. See `requirement_data::requirement_list` for more info */
-        std::string required_skills_list(const player& _player) const;
+        std::string required_skills_list(const player& _player, bool colored=true) const;
 
     private:
         bool check_enough_materials(const inventory &crafting_inv, int batch = 1) const;
@@ -255,7 +256,8 @@ struct requirement_data {
                               const inventory &crafting_inv, const std::vector< std::vector<T> > &objs, int batch = 1);
         template<typename T>
         static std::string make_list(const inventory &crafting_inv,
-                                     const std::vector< std::vector<T> > &objs, int batch = 1, bool more=false);
+                                     const std::vector< std::vector<T> > &objs,
+                                     int batch = 1, bool more=false, bool colored=true);
         template<typename T>
         static bool remove_item(const std::string &type, std::vector< std::vector<T> > &vec);
         template<typename T>

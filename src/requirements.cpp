@@ -335,17 +335,25 @@ int requirement_data::print_list( WINDOW *w, int ypos, int xpos, int width, nc_c
 }
 
 template<typename T>
-std::string requirement_data::make_list(const inventory &crafting_inv, const std::vector< std::vector<T> > &objs, int batch, bool more)
+std::string requirement_data::make_list(const inventory &crafting_inv,
+    const std::vector< std::vector<T> > &objs,
+    int batch, bool more, bool colored)
 {
     std::ostringstream buffer;
     for( const auto &comp_list : objs ) {
         const bool has_one = any_marked_available( comp_list );
         for( auto req = comp_list.begin(); req != comp_list.end(); ++req ) {
             if( req != comp_list.begin() ) {
-                buffer << "<color_white> " << _( "OR" ) << "</color> ";
+                auto or_str = _("OR");
+                if(colored) buffer << "<color_white> " << or_str << "</color> ";
+                else buffer << or_str;
             }
-            const std::string col = req->get_color( has_one, crafting_inv, batch );
-            buffer << "<color_" << col << ">" << req->to_string(batch) << "</color>";
+            if (colored) {
+                const std::string col = req->get_color( has_one, crafting_inv, batch );
+                buffer << "<color_" << col << ">" << req->to_string(batch) << "</color>";
+            } else {
+                buffer << req->to_string(batch);
+            }
         }
         //FIXME: Reintroduce lack of a trailing colon
         if (more) buffer << ",";
@@ -400,13 +408,13 @@ int requirement_data::print_skills(WINDOW *w, int ypos, int xpos, int width, nc_
 }
 
 // Utility function for printing a vector of vectors of component requirements
-std::string requirement_data::requirement_list(const player& _player, const inventory& crafting_inv, int batch) const
+std::string requirement_data::requirement_list(const player& _player, const inventory& crafting_inv, int batch, bool colored) const
 {
     std::ostringstream buffer;
 
-    std::string components_str = required_components_list(crafting_inv, batch);
-    std::string tools_str = required_tools_list(crafting_inv, batch);
-    std::string skills_str = required_skills_list(_player);
+    std::string components_str = required_components_list(crafting_inv, batch, colored);
+    std::string tools_str = required_tools_list(crafting_inv, batch, colored);
+    std::string skills_str = required_skills_list(_player, colored);
 
     buffer << components_str;
     if (components_str.length() > 0 && (tools_str.length() > 0 || skills_str.length() > 0) ) {
@@ -421,29 +429,32 @@ std::string requirement_data::requirement_list(const player& _player, const inve
     return buffer.str();
 }
 
-std::string requirement_data::required_components_list(const inventory& crafting_inv, int batch) const
+std::string requirement_data::required_components_list(const inventory& crafting_inv, int batch, bool colored) const
 {
-    return make_list(crafting_inv, components, batch, false);
+    return make_list(crafting_inv, components, batch, false, colored);
 }
 
-std::string requirement_data::required_tools_list(const inventory& crafting_inv, int batch) const
+std::string requirement_data::required_tools_list(const inventory& crafting_inv, int batch, bool colored) const
 {
     std::ostringstream buffer;
 
-    buffer << make_list(crafting_inv, qualities, batch, tools.size() > 0);
-    buffer << make_list(crafting_inv, tools, batch, false);
+    buffer << make_list(crafting_inv, qualities, batch, tools.size() > 0, colored);
+    buffer << make_list(crafting_inv, tools, batch, false, colored);
 
     return buffer.str();
 }
 
-std::string requirement_data::required_skills_list(const player& _player) const
+std::string requirement_data::required_skills_list(const player& _player, bool colored) const
 {
     std::ostringstream skills_as_stream;
     for( auto &iter: skills ) {
         auto requirement = iter.second;
-        skills_as_stream << "<color_" << requirement.get_color(_player) << ">";
-        skills_as_stream << requirement.to_string() << "</color>";
-
+        if (colored) {
+            skills_as_stream << "<color_" << requirement.get_color(_player) << ">";
+            skills_as_stream << requirement.to_string() << "</color>";
+        } else {
+            skills_as_stream << requirement.to_string();
+        }
         // FIXME: Reintroduce lack of a trailing colon
         skills_as_stream << ", ";
     }
