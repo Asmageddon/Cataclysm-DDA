@@ -971,8 +971,8 @@ std::string item::info(bool showtext, std::vector<iteminfo> *dump, bool debug) c
                     std::string recipe_color = "";
                     std::string item_name = nname( _recipe->result, 1 );
 
+                    if(!_recipe->requirements.meets_skill_requirements(g->u)) recipe_color = "ltred";
                     if(g->u.knows_recipe(_recipe)) recipe_color = "ltgray";
-                    if(!_recipe->requirements.meets_skill_requirements(g->u)) recipe_color = "red";
 
                     if (recipe_color.length() == 0) {
                         recipes += item_name;
