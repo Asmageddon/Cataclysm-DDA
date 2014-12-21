@@ -11724,8 +11724,9 @@ bool player::try_study_recipe( const itype &book )
         bool can_learn = !knows_recipe(_recipe)
                          && _recipe->requirements.meets_skill_requirements(*this);
         if ( can_learn ) {
-            double learn_roll = rng_float(0.0, 1.0);
-            if ( learn_roll < _recipe->requirements.success_rate(*this) ) {
+            // Roughly 1 in 4 for skill level == difficulty
+            double learn_chance = _recipe->requirements.success_rate(*this, 1.3);
+            if ( rng_float(0.0, 1.0) < learn_chance ) {
                 learn_recipe(_recipe);
                 add_msg(m_good, _("Learned a recipe for %s from the %s."),
                                 item::nname( _recipe->result ).c_str(), book.nname(1).c_str());

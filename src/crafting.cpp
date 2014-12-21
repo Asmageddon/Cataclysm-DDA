@@ -1388,7 +1388,8 @@ void player::complete_craft()
     double success_rate = making->requirements.success_rate(*this);
     double roll = rng_float(0.0, 1.0);
     bool success = roll < success_rate;
-    bool critical_failure = !success && (roll < (1.0 - pow(1.0 - success_rate, 2)));
+    // Roughly 1 in 5 failures will be critical at skill level == difficulty
+    bool critical_failure = !success && (roll < making->requirements.success_rate(*this, 3));
 
     // Messed up badly; waste some components.
     if ( critical_failure ) {
@@ -1437,7 +1438,8 @@ void player::complete_craft()
                 add_msg(_("You craft %s from memory."), newit.type_name( 1 ).c_str());
             } else {
                 add_msg(_("You craft %s using a book as a reference."), newit.type_name( 1 ).c_str());
-                double learn_chance = making->requirements.success_rate(*this);
+                // Roughly 1 in 4 for skill level == difficulty
+                double learn_chance = making->requirements.success_rate(*this, 1.3);
                 double learn_roll = rng_float(0.0, 1.0);
 
                 if( learn_roll < learn_chance ) {
