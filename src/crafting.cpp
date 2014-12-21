@@ -768,7 +768,7 @@ const recipe *select_crafting_recipe( int &batch_size )
             keepline = true;
         } else if (action == "FILTER") {
             filterstring = string_input_popup(_("Search:"), 85, filterstring,
-                                              _("Search tools or component using prefix t. \nSearch skills using prefix s, or S for skill used only. \n (i.e. \"t:hammer\" or \"c:two by four\" or \"s:cooking\".)"));
+                                              _("Search tools or component using prefix t. \nSearch skills using prefix s. \n (i.e. \"t:hammer\" or \"c:two by four\" or \"s:cooking\".)"));
             redraw = true;
         } else if (action == "QUIT") {
             chosen = nullptr;
