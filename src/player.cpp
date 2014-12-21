@@ -12846,7 +12846,7 @@ int player::adjust_for_focus(int amount)
     return ret;
 }
 
-void player::practice( const Skill* s, int amount, int cap )
+void player::practice( const Skill* s, int amount, int task_difficulty )
 {
     SkillLevel& level = skillLevel(s);
     // Double amount, but only if level.exercise isn't a small negative number?
@@ -12896,7 +12896,7 @@ void player::practice( const Skill* s, int amount, int cap )
         amount /= 2;
     }
 
-    if (skillLevel(s) > cap) { //blunt grinding cap implementation for crafting
+    if (skillLevel(s) > task_difficulty) { //blunt grinding cap implementation for crafting
         amount = 0;
         int curLevel = skillLevel(s);
         if(is_player() && one_in(5)) {//remind the player intermittently that no skill gain takes place
@@ -12912,7 +12912,7 @@ void player::practice( const Skill* s, int amount, int cap )
         if (is_player() && newLevel > oldLevel) {
             add_msg(m_good, _("Your skill in %s has increased to %d!"), s->name().c_str(), newLevel);
         }
-        if(is_player() && newLevel > cap) {
+        if(is_player() && newLevel > task_difficulty) {
             //inform player immediately that the current recipe can't be used to train further
             add_msg(m_info, _("You feel that %s tasks of this level are becoming trivial."),
                     s->name().c_str());
@@ -12931,10 +12931,10 @@ void player::practice( const Skill* s, int amount, int cap )
     skillLevel(s).practice();
 }
 
-void player::practice( std::string s, int amount, int cap )
+void player::practice( std::string s, int amount, int task_difficulty )
 {
     const Skill* aSkill = Skill::skill(s);
-    practice( aSkill, amount, cap );
+    practice( aSkill, amount, task_difficulty );
 }
 
 bool player::knows_recipe(const recipe *rec) const
