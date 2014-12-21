@@ -90,7 +90,7 @@ double skill_requirement::success_rate(const player& _player, double difficulty_
 
 std::string skill_requirement::to_string() const
 {
-    return string_format("level %d %s", difficulty, skill->name().c_str());
+    return string_format(_("level %d %s"), difficulty, skill->name().c_str());
 }
 
 std::string skill_requirement::get_color(const player& _player) const
