@@ -209,8 +209,7 @@ void load_recipe(JsonObject &jsobj)
     while (jsarr.has_more()) {
         JsonArray ja = jsarr.next_array();
         std::string book_name = ja.get_string(0);
-        int book_level = ja.get_int(1);
-        rec->booksets.push_back(std::pair<std::string, int>(book_name, book_level));
+        rec->booksets.push_back(book_name);
     }
 
     add_to_component_lookup(rec);
@@ -234,8 +233,7 @@ void finalize_recipes()
     for( auto &recipes_it : recipes ) {
         for( auto r : recipes_it.second ) {
 
-            for( auto j = r->booksets.begin(); j != r->booksets.end(); ++j ) {
-                const std::string &book_id = j->first;
+            for( auto &book_id: r->booksets) {
                 if( !item::type_is_defined( book_id ) ) {
                     debugmsg("book %s for recipe %s does not exist", book_id.c_str(), r->ident.c_str());
                     continue;

@@ -63,9 +63,8 @@ struct recipe {
     int result_mult; // used by certain batch recipes that create more than one stack of the result
     bool paired;
 
-    // only used during loading json data: books and the skill needed
-    // to learn this recipe from.
-    std::vector<std::pair<std::string, int> > booksets;
+    // only used during loading json data: books you can learn this recipe from
+    std::vector<std::string> booksets;
 
     ~recipe();
     recipe();
