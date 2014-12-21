@@ -420,7 +420,7 @@ std::string requirement_data::requirement_list(const player& _player, const inve
     }
     buffer << skills_str;
 
-    return buffer.str()
+    return buffer.str();
 }
 
 std::string requirement_data::required_components_list(const inventory& crafting_inv, int batch) const

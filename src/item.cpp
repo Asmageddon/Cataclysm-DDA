@@ -967,13 +967,12 @@ std::string item::info(bool showtext, std::vector<iteminfo> *dump, bool debug) c
             if (!(book->recipes.empty())) {
                 std::string recipes = "";
                 size_t index = 1;
-                //
-                for( auto iter = book->recipes.begin(); iter != book->recipes.end(); ++iter, ++index ) {
+                for( auto &_recipe: book->recipes ) {
                     std::string recipe_color = "";
-                    std::string item_name = nname( (*iter)->result, 1 );
+                    std::string item_name = nname( _recipe->result, 1 );
 
-                    if(g->u.knows_recipe(*iter)) recipe_color = "ltgray";
-                    if(!(*iter)->requirements.meets_skill_requirements(g->u)) recipe_color = "red";
+                    if(g->u.knows_recipe(_recipe)) recipe_color = "ltgray";
+                    if(!_recipe->requirements.meets_skill_requirements(g->u)) recipe_color = "red";
 
                     if (recipe_color.length() == 0) {
                         recipes += item_name;
