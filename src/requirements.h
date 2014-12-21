@@ -99,19 +99,19 @@ struct skill_requirement {
 
 struct quality_requirement {
     quality_id type;
-    int count;
     int level;
     mutable available_status available;
 
-    quality_requirement() : type("UNKNOWN"), count(0), level(0), available(a_false)
+    quality_requirement() : type("UNKNOWN"), level(0), available(a_false)
     {
     }
-    quality_requirement(const quality_id &TYPE, int COUNT, int LEVEL) : type(TYPE), count(COUNT),
-        level(LEVEL), available(a_false)
+    quality_requirement(const quality_id &_type, int _level) : type(_type),
+        level(_level), available(a_false)
     {
     }
 
     void load(JsonArray &jarr);
+    // Dummy parameters that enable using this in requirement_data::print_list
     bool has(const inventory &crafting_inv, int = 0) const;
     std::string to_string(int = 0) const;
     void check_consistency(const std::string &display_name) const;

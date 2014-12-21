@@ -40,9 +40,8 @@ bool quality::has( const std::string &id )
 
 std::string quality_requirement::to_string(int) const
 {
-    return string_format( ngettext( "%d tool with %s of %d or more.",
-                                    "%d tools with %s of %d or more.", count ),
-                          count, quality::get_name( type ).c_str(), level );
+    return string_format( _("tool with %s of %d or more."),
+                          quality::get_name( type ).c_str(), level );
 }
 
 bool tool_comp::by_charges() const
@@ -108,7 +107,6 @@ void quality_requirement::load( JsonArray &jsarr )
     JsonObject quality_data = jsarr.next_object();
     type = quality_data.get_string( "id" );
     level = quality_data.get_int( "level", 1 );
-    count = quality_data.get_int( "amount", 1 );
 }
 
 void tool_comp::load( JsonArray &ja )
@@ -518,7 +516,7 @@ bool requirement_data::has_comps( const inventory &crafting_inv,
 
 bool quality_requirement::has( const inventory &crafting_inv, int ) const
 {
-    return crafting_inv.has_items_with_quality( type, level, count );
+    return crafting_inv.has_items_with_quality( type, level, 1 );
 }
 
 std::string quality_requirement::get_color( bool, const inventory &, int ) const
@@ -668,7 +666,7 @@ bool requirement_data::check_enough_materials( const item_comp &comp,
         }
         // This item can be used for the quality requirement, same as above for specific
         // tools applies.
-        if( !crafting_inv.has_items_with_quality( qr->type, qr->level, qr->count + abs(comp.count) ) ) {
+        if( !crafting_inv.has_items_with_quality( qr->type, qr->level, 1 + abs(comp.count) ) ) {
             comp.available = a_insufficent;
         }
     }
