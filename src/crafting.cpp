@@ -1905,8 +1905,6 @@ void player::complete_disassemble()
             return;
         }
         org_item = &items_on_ground[item_pos];
-        if (org_item->type->id != dis->result) {
-        org_item = g->m.get_item( posx, posy, item_pos );
         if (org_item->type->id != disassembly_recipe->result) {
             add_msg(_("The item might be gone, at least it is not at the expected position anymore."));
             return;

@@ -135,8 +135,8 @@ template<> item_comp legacy_req_load( JsonArray &jsarr ) {
     req.type = comp.get_string( 0 );
     req.count = comp.get_int( 1 );
 
-    if(comp.has_string(2)) {
-        recoverable = comp.get_string(2) == "NO_RECOVER" ? false : true;
+    if(comp.size() > 2) {
+        req.recoverable = comp.get_string(2) == "NO_RECOVER" ? false : true;
     }
 
     return req;
