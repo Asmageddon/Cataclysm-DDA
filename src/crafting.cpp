@@ -80,7 +80,7 @@ void add_to_component_lookup(recipe* r)
 {
     std::unordered_set<itype_id> counted;
     for (const auto &comp_choices : r->requirements.components) {
-        for (const item_comp &comp : comp_choices) {
+        for (const item_requirement &comp : comp_choices) {
             if (counted.count(comp.type)) {
                 continue;
             }
@@ -1526,26 +1526,32 @@ void set_item_inventory(item &newit)
     }
 }
 
-std::list<item> player::consume_items(const std::vector<item_comp> &components, int batch)
+std::list<item> player::consume_items(const std::vector<item_requirement> &components, int batch)
 {
     std::list<item> ret;
     // For each set of components in the recipe, fill you_have with the list of all
     // matching ingredients the player has.
-    std::vector<item_comp> player_has;
-    std::vector<item_comp> map_has;
-    std::vector<item_comp> mixed;
+    std::vector<item_requirement> player_has;
+    std::vector<item_requirement> map_has;
+    std::vector<item_requirement> mixed;
     enum {
         use_from_map = 1,
         use_from_player = 2,
         use_from_both = 1 | 2
     } use_from;
-    item_comp selected_comp("", 0);
+    item_requirement selected_comp("", 0, false);
     inventory map_inv;
     map_inv.form_from_map(point(posx, posy), PICKUP_RANGE);
 
     for( const auto &component : components ) {
         itype_id type = component.type;
-        int count = ( component.count > 0 ) ? component.count * batch : abs( component.count );
+        if(component.count < 0) {
+            // TODO: Move this to loading code
+            debugmsg("Negative %s component count: %i!", item::nname(type, 1).c_str(), component.count);
+        } else if(component.count < 0) {
+            debugmsg("Zero %s component count: %i!", item::nname(type, 1).c_str(), component.count);
+        }
+        int count = component.count * batch;
         bool pl = false, mp = false;
 
         if (item::count_by_charges(type) && count > 0) {
@@ -1667,13 +1673,13 @@ std::list<item> player::consume_items(const std::vector<item_comp> &components, 
     return ret;
 }
 
-void player::consume_tools(const std::vector<tool_comp> &tools, int batch)
+void player::consume_tools(const std::vector<item_requirement> &tools, int batch)
 {
     bool found_nocharge = false;
     inventory map_inv;
     map_inv.form_from_map(point(posx, posy), PICKUP_RANGE);
-    std::vector<tool_comp> player_has;
-    std::vector<tool_comp> map_has;
+    std::vector<item_requirement> player_has;
+    std::vector<item_requirement> map_has;
     // Use charges of any tools that require charges used
     for (auto it = tools.begin(); it != tools.end() && !found_nocharge; ++it) {
         itype_id type = it->type;
@@ -1873,7 +1879,7 @@ void player::disassemble(int dis_pos)
 }
 
 // Find out which of the alternative components had been used to craft the item.
-item_comp find_component( const std::vector<item_comp> &altercomps, const item &dis_item )
+item_requirement find_component( const std::vector<item_requirement> &altercomps, const item &dis_item )
 {
     for( auto & comp : altercomps ) {
         for( auto & elem : dis_item.components ) {
@@ -1959,7 +1965,7 @@ void player::complete_disassemble()
     }
 
     for (const auto &altercomps : disassembly_recipe->requirements.components) {
-        const item_comp comp = find_component( altercomps, dis_item );
+        const item_requirement comp = find_component( altercomps, dis_item );
         int compcount = comp.count;
         item newit( comp.type, calendar::turn );
         if( !comp.recoverable || newit.has_flag( "UNRECOVERABLE" ) ) {

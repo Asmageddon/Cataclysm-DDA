@@ -453,7 +453,7 @@ bool veh_interact::is_drive_conflict(int msg_width){
     bool install_muscle_engine = (sel_vpart_info->fuel_type == "muscle");
     bool has_muscle_engine = veh->has_engine_type("muscle", false);
     bool can_install = !(has_muscle_engine && install_muscle_engine);
-    
+
     if (!can_install) {
         werase (w_msg);
         fold_and_print(w_msg, 0, 1, msg_width - 2, c_ltred,
@@ -471,18 +471,18 @@ bool veh_interact::can_install_part(int msg_width){
     int dif_eng = 0;
     if (is_engine && !install_muscle_engine) {
         for (size_t p = 0; p < veh->parts.size(); p++) {
-            if (veh->part_flag (p, "ENGINE") && 
-                veh->part_info(p).fuel_type != "muscle") 
+            if (veh->part_flag (p, "ENGINE") &&
+                veh->part_info(p).fuel_type != "muscle")
             {
                 engines++;
                 dif_eng = dif_eng / 2 + 12;
             }
         }
     }
-    
+
     itype_id itm = sel_vpart_info->item;
     bool drive_conflict = is_drive_conflict(msg_width);
-    
+
     bool has_comps = crafting_inv.has_components(itm, 1);
     bool has_skill = g->u.skillLevel("mechanics") >= sel_vpart_info->difficulty;
     bool has_tools = ((has_welder && has_goggles) || has_duct_tape) && has_wrench;
@@ -572,13 +572,13 @@ void veh_interact::do_install()
     }
     mvwprintz(w_mode, 0, 1, c_ltgray, _("Choose new part to install here:"));
     wrefresh (w_mode);
-    
+
     int pos = 0;
     while (true) {
         sel_vpart_info = &(can_mount[pos]);
         display_list (pos, can_mount);
         bool can_install = can_install_part(msg_width);
-        
+
         const std::string action = main_context.handle_input();
         if (action == "INSTALL" || action == "CONFIRM"){
             if (can_install) {
@@ -775,10 +775,10 @@ bool veh_interact::can_remove_part(int veh_part_index, int mech_skill, int msg_w
     werase (w_msg);
     if (veh->can_unmount(veh_part_index)) {
         bool is_wheel = veh->part_flag(veh_part_index, "WHEEL");
-        bool is_wrenchable = veh->part_flag(veh_part_index, "TOOL_WRENCH") || 
+        bool is_wrenchable = veh->part_flag(veh_part_index, "TOOL_WRENCH") ||
                                 (is_wheel && veh->part_flag(veh_part_index, "NO_JACK"));
         bool is_hand_remove = veh->part_flag(veh_part_index, "TOOL_NONE");
-        
+
         int skill_req;
         if (veh->part_flag(veh_part_index, "DIFFICULTY_REMOVE")) {
             skill_req = veh->part_info(veh_part_index).difficulty;
@@ -787,10 +787,10 @@ bool veh_interact::can_remove_part(int veh_part_index, int mech_skill, int msg_w
         } else {
             skill_req = 2;
         }
-        
+
         bool has_skill = false;
         if (mech_skill >= skill_req) has_skill = true;
-        
+
         //print necessary materials
         if (is_wrenchable) {
             fold_and_print(w_msg, 0, 1, msg_width - 2, c_ltgray,
@@ -820,8 +820,8 @@ bool veh_interact::can_remove_part(int veh_part_index, int mech_skill, int msg_w
         }
         wrefresh (w_msg);
         //check if have all necessary materials
-        if (has_skill && ((is_wheel && has_wrench && has_jack) || 
-                            (is_wrenchable && has_wrench) || 
+        if (has_skill && ((is_wheel && has_wrench && has_jack) ||
+                            (is_wrenchable && has_wrench) ||
                             (is_hand_remove) ||
                             ((!is_wheel) && has_wrench && has_hacksaw) )) {
             return true;
@@ -832,7 +832,7 @@ bool veh_interact::can_remove_part(int veh_part_index, int mech_skill, int msg_w
         wrefresh (w_msg);
     }
     return false;
-    
+
 }
 
 /**
@@ -1679,7 +1679,7 @@ void complete_vehicle ()
     int vehicle_part = g->u.activity.values[6];
     int type = g->u.activity.values[7];
     std::string part_id = g->u.activity.str_values[0];
-    std::vector<tool_comp> tools;
+    std::vector<item_requirement> tools;
     int welder_charges = charges_per_use( "welder" );
     int welder_oxy_charges = charges_per_use( "oxy_torch" );
     int welder_crude_charges = charges_per_use( "welder_crude" );
@@ -1700,7 +1700,7 @@ void complete_vehicle ()
     int posy = 0;
     std::map<point, vehicle *> foundv;
     vehicle *fillv = NULL;
-    
+
     bool is_wheel = vehicle_part_types[part_id].has_flag("WHEEL");
     bool is_wrenchable = vehicle_part_types[part_id].has_flag("TOOL_WRENCH");
     bool is_hand_remove = vehicle_part_types[part_id].has_flag("TOOL_NONE");
@@ -1713,13 +1713,13 @@ void complete_vehicle ()
             if (has_goggles) {
                 // Need welding goggles to use any of these tools,
                 // without the goggles one _must_ use the duct tape
-                tools.push_back(tool_comp("welder", welder_charges));
-                tools.push_back(tool_comp("oxy_torch", welder_oxy_charges));
-                tools.push_back(tool_comp("welder_crude", welder_crude_charges));
-                tools.push_back(tool_comp("toolset", welder_crude_charges));
+                tools.push_back(item_requirement("welder", welder_charges, true));
+                tools.push_back(item_requirement("oxy_torch", welder_oxy_charges, true));
+                tools.push_back(item_requirement("welder_crude", welder_crude_charges, true));
+                tools.push_back(item_requirement("toolset", welder_crude_charges, true));
             }
-            tools.push_back(tool_comp("duct_tape", DUCT_TAPE_USED));
-            tools.push_back(tool_comp("toolbox", DUCT_TAPE_USED));
+            tools.push_back(item_requirement("duct_tape", DUCT_TAPE_USED, true));
+            tools.push_back(item_requirement("toolbox", DUCT_TAPE_USED, true));
             g->u.consume_tools(tools);
         }
 
@@ -1782,13 +1782,13 @@ void complete_vehicle ()
         if (has_goggles) {
             // Need welding goggles to use any of these tools,
             // without the goggles one _must_ use the duct tape
-            tools.push_back(tool_comp("welder", int(welder_charges * dmg)));
-            tools.push_back(tool_comp("oxy_torch", int(welder_oxy_charges * dmg)));
-            tools.push_back(tool_comp("welder_crude", int(welder_crude_charges * dmg)));
-            tools.push_back(tool_comp("toolset", int(welder_crude_charges * dmg)));
+            tools.push_back(item_requirement("welder", int(welder_charges * dmg), true));
+            tools.push_back(item_requirement("oxy_torch", int(welder_oxy_charges * dmg), true));
+            tools.push_back(item_requirement("welder_crude", int(welder_crude_charges * dmg), true));
+            tools.push_back(item_requirement("toolset", int(welder_crude_charges * dmg), true));
         }
-        tools.push_back(tool_comp("duct_tape", int(DUCT_TAPE_USED * dmg)));
-        tools.push_back(tool_comp("toolbox", int(DUCT_TAPE_USED * dmg)));
+        tools.push_back(item_requirement("duct_tape", int(DUCT_TAPE_USED * dmg), true));
+        tools.push_back(item_requirement("toolbox", int(DUCT_TAPE_USED * dmg), true));
         g->u.consume_tools(tools);
         veh->parts[vehicle_part].hp = veh->part_info(vehicle_part).durability;
         add_msg (m_good, _("You repair the %s's %s."),
@@ -1805,8 +1805,8 @@ void complete_vehicle ()
         // Only parts that use charges
         if (!is_wrenchable && !is_hand_remove && !is_wheel){
             if( !crafting_inv.has_items_with_quality( "SAW_M_FINE", 1, 1 ) ) {
-                tools.push_back(tool_comp("circsaw_off", 20));
-                tools.push_back(tool_comp("oxy_torch", 10));
+                tools.push_back(item_requirement("circsaw_off", 20, true));
+                tools.push_back(item_requirement("oxy_torch", 10, true));
                 g->u.consume_tools(tools);
             }
         }

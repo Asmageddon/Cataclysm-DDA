@@ -2959,8 +2959,8 @@ int iuse::sew(player *p, item *it, bool, point)
         return 0;
     }
 
-    std::vector<item_comp> comps;
-    comps.push_back(item_comp(repair_item, items_needed));
+    std::vector<item_requirement> comps;
+    comps.push_back(item_requirement(repair_item, items_needed, false));
 
     if (fix->damage > 0) {
         p->moves -= 500 * p->fine_detail_vision_mod();
@@ -3668,8 +3668,8 @@ int iuse::solder_weld(player *p, item *it, bool, point)
                 return 0;
             }
 
-            std::vector<item_comp> comps;
-            comps.push_back(item_comp(repair_item, items_needed));
+            std::vector<item_requirement> comps;
+            comps.push_back(item_requirement(repair_item, items_needed, false));
 
             if (fix->damage > 0) {
                 p->moves -= 500 * p->fine_detail_vision_mod();
@@ -9857,7 +9857,7 @@ vehicle *pickveh( point center, bool advanced )
     pmenu.callback = &callback;
     pmenu.w_y = 0;
     pmenu.query();
-    
+
     if( pmenu.ret < 0 || pmenu.ret >= (int)vehs.size() ) {
         return nullptr;
     } else {

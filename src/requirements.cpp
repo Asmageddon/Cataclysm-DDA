@@ -44,29 +44,23 @@ std::string quality_requirement::to_string(int) const
                           quality::get_name( type ).c_str(), level );
 }
 
-bool tool_comp::by_charges() const
+void skill_requirement::load( JsonObject &json_obj )
 {
-    return count > 0;
+    // Two examples: {"skill": "tailor", "difficulty": 3}, {"skill": "fabrication", "min": 2, "difficulty": 3, "base_success": 0.7}
+    auto skill_name = json_obj.get_string("skill");
+    skill = Skill::skill(skill_name);
+    difficulty = json_obj.get_int("difficulty"); // Mandatory
+    minimum = json_obj.has_member("min") ? json_obj.get_int("min") : difficulty;
+    base_success = json_obj.has_member("base_success") ? json_obj.get_float("base_success") : 0.55f;
+    stat_factor  = json_obj.has_member("stat_factor") ? json_obj.get_float("stat_factor") : 0.75f;
 }
 
-std::string tool_comp::to_string(int batch) const
+skill_requirement skill_requirement::from_json( JsonObject &jsobj )
 {
-    if( by_charges() ) {
-        //~ <tool-name> (<numer-of-charges> charges)
-        return string_format( ngettext( "%s (%d charge)", "%s (%d charges)", count * batch ),
-                              item::nname( type ).c_str(), count * batch );
-    } else {
-        return item::nname( type, abs( count ) );
-    }
+    skill_requirement obj = skill_requirement();
+    obj.load(jsobj);
+    return obj;
 }
-
-std::string item_comp::to_string(int batch) const
-{
-    const int c = std::abs( count ) * batch;
-    //~ <item-count> <item-name>
-    return string_format( ngettext( "%d %s", "%d %s", c ), c, item::nname( type, c ).c_str() );
-}
-
 
 // Skill requirement class
 bool skill_requirement::meets_minimum(const player& _player) const
@@ -102,47 +96,42 @@ std::string skill_requirement::get_color(const player& _player) const
     return "green";
 }
 
-// TODO: New loading code
-//void  tool_comp::load(JsonObject &jsobj);
-//static tool_comp tool_comp::from_json(JsonObject &jsobj);
+template<typename T> T legacy_req_load( JsonArray &jsarr, bool is_tool = false );
 
-//void  item_comp::load(JsonObject &jsobj);
-//static item_comp item_comp::from_json(JsonObject &jsobj);
+template<> item_requirement legacy_req_load( JsonArray &jsarr, bool is_tool) {
+    if(is_tool) {
+        item_requirement req = item_requirement();
+        if( jsarr.test_string() ) {
+            // constructions uses this format: [ "tool", ... ]. Ugh.
+            req.type = jsarr.next_string();
+            req.count = 0;
+        } else {
+            JsonArray comp = jsarr.next_array();
+            req.type = comp.get_string( 0 );
+            int count = comp.get_int( 1 );
+            if(count < 0) {
+                req.count = count * -1; req.by_charges = false;
+            } else {
+                req.count = count; req.by_charges = true;
+            }
+        }
 
-//void  quality_requirement::load(JsonObject &jsobj);
-//static quality_requirement  quality_requirement::from_json(JsonObject &jsobj);
-
-template<typename T> T legacy_req_load( JsonArray &jsarr );
-
-template<> tool_comp legacy_req_load( JsonArray &jsarr ) {
-    tool_comp req = tool_comp();
-    if( jsarr.test_string() ) {
-        // constructions uses this format: [ "tool", ... ]
-        req.type = jsarr.next_string();
-        req.count = -1;
+        return req;
     } else {
+        item_requirement req = item_requirement();
         JsonArray comp = jsarr.next_array();
         req.type = comp.get_string( 0 );
         req.count = comp.get_int( 1 );
-    }
 
-    return req;
+        if(comp.size() > 2) {
+            req.recoverable = comp.get_string(2) == "NO_RECOVER" ? false : true;
+        }
+
+        return req;
+    }
 }
 
-template<> item_comp legacy_req_load( JsonArray &jsarr ) {
-    item_comp req = item_comp();
-    JsonArray comp = jsarr.next_array();
-    req.type = comp.get_string( 0 );
-    req.count = comp.get_int( 1 );
-
-    if(comp.size() > 2) {
-        req.recoverable = comp.get_string(2) == "NO_RECOVER" ? false : true;
-    }
-
-    return req;
-}
-
-template<> quality_requirement legacy_req_load( JsonArray &jsarr ) {
+template<> quality_requirement legacy_req_load( JsonArray &jsarr, bool ) {
     quality_requirement req = quality_requirement();
     JsonObject quality_data = jsarr.next_object();
     req.type = quality_data.get_string( "id" );
@@ -152,14 +141,14 @@ template<> quality_requirement legacy_req_load( JsonArray &jsarr ) {
 }
 
 template<typename T>
-void requirement_data::load_obj_list(JsonArray &jsarr, std::vector< std::vector<T> > &objs)
+void requirement_data::load_obj_list(JsonArray &jsarr, std::vector< std::vector<T> > &objs, bool is_tool)
 {
     while (jsarr.has_more()) {
         if(jsarr.test_array()) {
             std::vector<T> choices;
             JsonArray ja = jsarr.next_array();
             while (ja.has_more()) {
-                choices.push_back(legacy_req_load<T>(ja));
+                choices.push_back(legacy_req_load<T>(ja, is_tool));
             }
             if( !choices.empty() ) {
                 objs.push_back( choices );
@@ -168,76 +157,100 @@ void requirement_data::load_obj_list(JsonArray &jsarr, std::vector< std::vector<
             // tool qualities don't normally use a list of alternatives
             // each quality is mandatory.
             objs.push_back(std::vector<T>(1));
-            objs.back()[0] = legacy_req_load<T>(jsarr);
+            objs.back()[0] = legacy_req_load<T>(jsarr, is_tool);
+        }
+    }
+}
+
+template<typename T>
+void load_requirement_alternative_list(JsonObject &jsobj, std::string from_field,
+                                       std::vector< std::vector<T> > &into)
+{
+    if(!jsobj.has_array(from_field)) return;
+
+    JsonArray jsarr = jsobj.get_array(from_field);
+    while(jsarr.has_more())
+    {
+        into.push_back(std::vector<T>());
+        JsonArray subarray = jsarr.next_array();
+        while(subarray.has_more()) {
+            JsonObject req_obj = subarray.next_object();
+            auto req = T::from_json(req_obj);
+            into.back().push_back(req);
         }
     }
 }
 
 void requirement_data::load( JsonObject &jsobj )
 {
-    // TODO: Move all requirement data into a subcomponent
-    JsonArray jsarr;
-    jsarr = jsobj.get_array( "components" );
-    load_obj_list( jsarr, components );
-    jsarr = jsobj.get_array( "qualities" );
-    load_obj_list( jsarr, qualities );
-    jsarr = jsobj.get_array( "tools" );
-    load_obj_list( jsarr, tools );
-
-    load_skill_requirements(jsobj);
+    if(jsobj.has_object("requirements")) {
+        auto req_subobj = jsobj.get_object("requirements");
+        load_requirement_alternative_list(req_subobj, "components", components);
+        load_requirement_alternative_list(req_subobj, "qualities", qualities);
+        load_requirement_alternative_list(req_subobj, "tools", tools);
+        if(req_subobj.has_array("skills")) {
+            JsonArray jsarr = req_subobj.get_array("skills");
+            while(jsarr.has_more()) {
+                JsonObject skill_req_obj = jsarr.next_object();
+                skill_requirement req = skill_requirement::from_json(skill_req_obj);
+                skills[req.skill->name()] = req;
+            }
+        }
+    } else {
+        // This is a horrid hack, and by itself a good enough reason to deprecate old format
+        JsonArray jsarr;
+        if(jsobj.has_array("components")) {
+            jsarr = jsobj.get_array( "components" );
+            load_obj_list( jsarr, components, false );
+        }
+        if(jsobj.has_array("qualities")) {
+            jsarr = jsobj.get_array( "qualities" );
+            load_obj_list( jsarr, qualities );
+        }
+        if(jsobj.has_array("tools")) {
+            jsarr = jsobj.get_array( "tools" );
+            load_obj_list( jsarr, tools, true );
+        }
+        load_skill_requirements(jsobj);
+    }
 }
 
 void requirement_data::load_skill_requirements(JsonObject& js_obj) {
     // Load data files from before the recipe minimum/difficulty skill requirement change
     // TODO: This should be phased out once/if data files change
-    if(js_obj.has_member("difficulty")) {
-        std::string skill_name = js_obj.get_string("skill_used", "");
-        if (skill_name.length() != 0) {
-            auto skill = Skill::skill(skill_name);
-            auto req = skill_requirement();
-            req.skill = skill;
-            req.difficulty = js_obj.get_int( "difficulty" );;
-            req.minimum = req.difficulty;
-            req.base_success = 0.55f;
-            skills[skill_name] = req;
-        }
+    std::string skill_name = js_obj.get_string("skill_used", "");
+    if (skill_name.length() != 0) {
+        auto skill = Skill::skill(skill_name);
+        auto req = skill_requirement();
+        req.skill = skill;
+        req.difficulty = js_obj.get_int( "difficulty" );;
+        req.minimum = req.difficulty;
+        req.base_success = 0.55f;
+        skills[skill_name] = req;
+    }
 
-        JsonArray skills_array = js_obj.get_array("skills_required");
-        if (!skills_array.empty()) {
-            // could be a single requirement, or multiple
-            if( skills_array.has_array(0) ) {
-                while (skills_array.has_more()) {
-                    JsonArray ja = skills_array.next_array();
-                    auto skill = Skill::skill(ja.get_string(0));
-                    auto req = skill_requirement();
-                    req.skill = skill;
-                    req.difficulty = ja.get_int(1);
-                    req.minimum = ja.get_int(1);
-                    req.base_success = 0.55f;
-                    skills[ja.get_string(0)] = req;
-                }
-            } else {
-                auto skill = Skill::skill(skills_array.get_string(0));
+    JsonArray skills_array = js_obj.get_array("skills_required");
+    if (!skills_array.empty()) {
+        // could be a single requirement, or multiple
+        if( skills_array.has_array(0) ) {
+            while (skills_array.has_more()) {
+                JsonArray ja = skills_array.next_array();
+                auto skill = Skill::skill(ja.get_string(0));
                 auto req = skill_requirement();
                 req.skill = skill;
-                req.difficulty = skills_array.get_int(1);
-                req.minimum = skills_array.get_int(1);
+                req.difficulty = ja.get_int(1);
+                req.minimum = ja.get_int(1);
                 req.base_success = 0.55f;
-                skills[skills_array.get_string(0)] = req;
+                skills[ja.get_string(0)] = req;
             }
-        }
-    } else {
-        // Loaded from "skill_requirements": { "tailor": {"min": 3, "difficulty": 3}, "fabrication": {"min": 2, "difficulty": 3, "base_success": 0.7}}
-        JsonObject skills_obj = js_obj.get_object("skill_requirements");
-        for (auto &skill_name : skills_obj.get_member_names()) {
-            JsonObject jo = skills_obj.get_object(skill_name);
+        } else {
+            auto skill = Skill::skill(skills_array.get_string(0));
             auto req = skill_requirement();
-            req.skill = Skill::skill(skill_name);
-            req.difficulty = jo.get_int("difficulty"); // Mandatory
-            req.minimum = jo.has_member("min") ? jo.get_int("min") : req.difficulty;
-            req.base_success = jo.has_member("base_success") ? jo.get_float("base_success") : 0.55f;
-            req.stat_factor  = jo.has_member("stat_factor") ? jo.get_float("stat_factor") : 0.75f;
-            skills[skill_name] = req;
+            req.skill = skill;
+            req.difficulty = skills_array.get_int(1);
+            req.minimum = skills_array.get_int(1);
+            req.base_success = 0.55f;
+            skills[skills_array.get_string(0)] = req;
         }
     }
 }
@@ -291,13 +304,6 @@ void quality_requirement::check_consistency( const std::string &display_name ) c
 {
     if( !quality::has( type ) ) {
         debugmsg( "Unknown quality %s in %s", type.c_str(), display_name.c_str() );
-    }
-}
-
-void component::check_consistency( const std::string &display_name ) const
-{
-    if( !item::type_is_defined( type ) ) {
-        debugmsg( "%s in %s is not a valid item template", type.c_str(), display_name.c_str() );
     }
 }
 
@@ -548,6 +554,19 @@ bool requirement_data::has_comps( const inventory &crafting_inv,
     return retval;
 }
 
+void quality_requirement::load( JsonObject &jsobj )
+{
+    type = jsobj.get_string("quality");
+    level = jsobj.get_int("level");
+}
+
+quality_requirement quality_requirement::from_json( JsonObject &jsobj )
+{
+    quality_requirement obj = quality_requirement();
+    obj.load(jsobj);
+    return obj;
+}
+
 bool quality_requirement::has( const inventory &crafting_inv, int ) const
 {
     return crafting_inv.has_items_with_quality( type, level, 1 );
@@ -558,74 +577,109 @@ std::string quality_requirement::get_color( bool, const inventory &, int ) const
     return available == a_true ? "green" : "red";
 }
 
-bool tool_comp::has( const inventory &crafting_inv, int batch ) const
+void item_requirement::check_consistency( const std::string &display_name ) const
 {
-    if( type == "goggles_welding" ) {
-        if( g->u.has_bionic( "bio_sunglasses" ) || g->u.is_wearing( "rm13_armor_on" ) ) {
-            return true;
-        }
+    if( !item::type_is_defined( type ) ) {
+        debugmsg( "%s in %s is not a valid item template", type.c_str(), display_name.c_str() );
     }
-    if( !by_charges() ) {
-        return crafting_inv.has_tools( type, std::abs( count ) );
+}
+
+void item_requirement::load(JsonObject &jsobj)
+{
+    type = jsobj.get_string("item");
+    if(jsobj.has_int("charges")) {
+        count = jsobj.get_int("charges");
+        by_charges = true;
+    } else if(jsobj.has_int("count")) {
+        count = jsobj.get_int("count");
+        by_charges = false;
     } else {
+        count = 0; by_charges = false;
+    }
+
+    recoverable = jsobj.has_bool("recoverable") ? jsobj.get_bool("recoverable") : true;
+}
+
+item_requirement item_requirement::from_json(JsonObject &jsobj)
+{
+    item_requirement obj = item_requirement();
+    obj.load(jsobj);
+    return obj;
+}
+
+bool item_requirement::has( const inventory &crafting_inv, int batch ) const
+{
+    if(count == 0) {
+        if( type == "goggles_welding" ) {
+            if( g->u.has_bionic( "bio_sunglasses" ) || g->u.is_wearing( "rm13_armor_on" ) ) {
+                return true;
+            }
+        }
+
+        return crafting_inv.has_tools( type, 1 );
+    } else if(by_charges) {
         return crafting_inv.has_charges( type, count * batch );
-    }
-}
-
-std::string tool_comp::get_color( bool has_one, const inventory &crafting_inv, int batch ) const
-{
-    if( type == "goggles_welding" ) {
-        if( g->u.has_bionic( "bio_sunglasses" ) || g->u.is_wearing( "rm13_armor_on" ) ) {
-            return "cyan";
-        }
-    }
-    if( available == a_insufficent ) {
-        return "brown";
-    } else if( !by_charges() && crafting_inv.has_tools( type, std::abs( count ) ) ) {
-        return "green";
-    } else if( by_charges() && crafting_inv.has_charges( type, count * batch ) ) {
-        return "green";
-    }
-    return has_one ? "dkgray" : "red";
-}
-
-bool item_comp::has( const inventory &crafting_inv, int batch ) const
-{
-    // If you've Rope Webs, you can spin up the webbing to replace any amount of
-    // rope your projects may require.  But you need to be somewhat nourished:
-    // Famished or worse stops it.
-    if( type == "rope_30" || type == "rope_6" ) {
-        // NPC don't craft?
-        // TODO: what about the amount of ropes vs the hunger?
-        if( g->u.has_trait( "WEB_ROPE" ) && g->u.hunger <= 300 ) {
-            return true;
-        }
-    }
-    const int cnt = std::abs( count ) * batch;
-    if( item::count_by_charges( type ) ) {
-        return crafting_inv.has_charges( type, cnt );
     } else {
-        return crafting_inv.has_components( type, cnt );
+        // If you've Rope Webs, you can spin up the webbing to replace any amount of
+        // rope your projects may require.  But you need to be somewhat nourished:
+        // Famished or worse stops it.
+        if( type == "rope_30" || type == "rope_6" ) {
+            // NPC don't craft?
+            // TODO: what about the amount of ropes vs the hunger?
+            // TODO: This could be changed into a recipe with a mutation requirement someday
+            if( g->u.has_trait( "WEB_ROPE" ) && g->u.hunger <= 300 ) {
+                return true;
+            }
+        }
+        return crafting_inv.has_components( type, count * batch );
     }
 }
 
-std::string item_comp::get_color( bool has_one, const inventory &crafting_inv, int batch ) const
+std::string item_requirement::to_string(int batch) const
 {
-    if( type == "rope_30" || type == "rope_6" ) {
-        if( g->u.has_trait( "WEB_ROPE" ) && g->u.hunger <= 300 ) {
-            return "ltgreen"; // Show that WEB_ROPE is on the job!
-        }
+    if(count == 0) {
+        return item::nname(type, 1);
+    } else if( by_charges ) {
+        //~ <tool-name> (<numer-of-charges> charges)
+        return string_format( ngettext( "%s (%d charge)", "%s (%d charges)", count * batch ),
+                              item::nname( type ).c_str(), count * batch );
+    } else {
+        const int c = count * batch;
+        //~ <item-count> <item-name>
+        return string_format( ngettext( "%d %s", "%d %s", c ), c, item::nname( type, c ).c_str() );
     }
-    const int cnt = std::abs( count ) * batch;
-    if( available == a_insufficent ) {
-        return "brown";
-    } else if( item::count_by_charges( type ) ) {
-        if( crafting_inv.has_charges( type, cnt ) ) {
+}
+
+std::string item_requirement::get_color( bool has_one, const inventory &crafting_inv, int batch ) const
+{
+    if(count == 0) {
+        if( type == "goggles_welding" ) {
+            if( g->u.has_bionic( "bio_sunglasses" ) || g->u.is_wearing( "rm13_armor_on" ) ) {
+                return "cyan";
+            }
+        }
+        if( available == a_insufficent ) { return "brown"; }
+        if( crafting_inv.has_tools(type, 1) ) {
             return "green";
         }
-    } else if( crafting_inv.has_components( type, cnt ) ) {
-        return "green";
+    } else if(by_charges) {
+        if( available == a_insufficent ) { return "brown"; }
+        if ( crafting_inv.has_charges(type, count * batch) ) {
+            return "green";
+        }
+    } else {
+        if( type == "rope_30" || type == "rope_6" ) {
+            if( g->u.has_trait( "WEB_ROPE" ) && g->u.hunger <= 300 ) {
+                return "ltgreen"; // Show that WEB_ROPE is on the job!
+            }
+        }
+        if( available == a_insufficent ) { return "brown"; }
+
+        if( crafting_inv.has_components( type, count * batch ) ) {
+            return "green";
+        }
     }
+
     return has_one ? "dkgray" : "red";
 }
 
@@ -660,18 +714,18 @@ bool requirement_data::check_enough_materials( const inventory &crafting_inv, in
     return retval;
 }
 
-bool requirement_data::check_enough_materials( const item_comp &comp,
+bool requirement_data::check_enough_materials( const item_requirement &comp,
         const inventory &crafting_inv, int batch ) const
 {
     if( comp.available != a_true ) {
         return false;
     }
-    const int cnt = std::abs( comp.count ) * batch;
-    const tool_comp *tq = find_by_type( tools, comp.type );
+    const int count = comp.count * batch;
+    const item_requirement *tq = find_by_type( tools, comp.type );
     if( tq != nullptr && tq->available == a_true ) {
         // The very same item type is also needed as tool!
         // Use charges of it, or use it by count?
-        const int tc = tq->by_charges() ? 1 : std::abs( tq->count );
+        const int tc = tq->by_charges ? 1 : tq->count;
         // Check for components + tool count. Check item amount (excludes
         // pseudo items) and tool amount (includes pseudo items)
         // Imagine: required = 1 welder (component) + 1 welder (tool),
@@ -685,8 +739,8 @@ bool requirement_data::check_enough_materials( const item_comp &comp,
         // non-available even before this function is called.
         // Only ammo and (some) food is counted by charges, both are unlikely
         // to appear as tool, but it's possible /-:
-        const item_comp i_tmp( comp.type, cnt + tc );
-        const tool_comp t_tmp( comp.type, -( cnt + tc ) ); // not by charges!
+        const item_requirement i_tmp( comp.type, count + tc, false );
+        const item_requirement t_tmp( comp.type, count + tc, true ); // not by charges!
         // batch factor is explicitly 1, because it's already included in the count.
         if( !i_tmp.has( crafting_inv, 1 ) && !t_tmp.has( crafting_inv, 1 ) ) {
             comp.available = a_insufficent;
@@ -700,7 +754,7 @@ bool requirement_data::check_enough_materials( const item_comp &comp,
         }
         // This item can be used for the quality requirement, same as above for specific
         // tools applies.
-        if( !crafting_inv.has_items_with_quality( qr->type, qr->level, 1 + abs(comp.count) ) ) {
+        if( !crafting_inv.has_items_with_quality( qr->type, qr->level, 1 + comp.count ) ) {
             comp.available = a_insufficent;
         }
     }

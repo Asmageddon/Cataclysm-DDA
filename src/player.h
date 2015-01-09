@@ -1012,8 +1012,8 @@ class player : public Character, public JsonSerializer, public JsonDeserializer
         const inventory &crafting_inventory(); // includes nearby items
         void invalidate_crafting_inventory();
         std::vector<item> get_eligible_containers_for_crafting();
-        std::list<item> consume_items(const std::vector<item_comp> &components, int batch = 1);
-        void consume_tools(const std::vector<tool_comp> &tools, int batch = 1);
+        std::list<item> consume_items(const std::vector<item_requirement> &components, int batch = 1);
+        void consume_tools(const std::vector<item_requirement> &tools, int batch = 1);
 
         // Auto move methods
         void set_destination(const std::vector<point> &route);

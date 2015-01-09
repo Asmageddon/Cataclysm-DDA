@@ -35,45 +35,23 @@ struct quality {
     static bool has(const quality_id &id);
 };
 
-struct component {
-    itype_id type;
-    int count;
+struct item_requirement {
+    itype_id type = "null";
+    int count = 0;
+    bool by_charges = false;
     // -1 means the player doesn't have the item, 1 means they do,
     // 0 means they have item but not enough for both tool and component
-    mutable available_status available;
-    bool recoverable;
+    mutable available_status available = a_false;
+    bool recoverable = true;
 
-    component() : type("null") , count(0) , available(a_false), recoverable(true)
-    {
-    }
-    component(const itype_id &TYPE, int COUNT) : type (TYPE), count (COUNT), available(a_false), recoverable(true)
-    {
-    }
-    component(const itype_id &TYPE, int COUNT, bool RECOVERABLE) : type (TYPE), count (COUNT), available(a_false), recoverable(RECOVERABLE)
-    {
-    }
+    item_requirement() { }
+    item_requirement(itype_id _type, int _count, bool _by_charges, bool _recoverable = true)
+        : type(_type), count(_count), by_charges(_by_charges), recoverable(_recoverable)
+    { }
     void check_consistency(const std::string &display_name) const;
-};
-
-struct tool_comp : public component {
-    tool_comp() : component() { }
-    tool_comp(const itype_id &TYPE, int COUNT) : component(TYPE, COUNT) { }
 
     void load(JsonObject &jsobj);
-    static tool_comp from_json(JsonObject &jsobj);
-
-    bool has(const inventory &crafting_inv, int batch = 1) const;
-    std::string to_string(int batch = 1) const;
-    std::string get_color(bool has_one, const inventory &crafting_inv, int batch = 1) const;
-    bool by_charges() const;
-};
-
-struct item_comp : public component {
-    item_comp() : component() { }
-    item_comp(const itype_id &TYPE, int COUNT) : component(TYPE, COUNT) { }
-
-    void load(JsonObject &jsobj);
-    static item_comp from_json(JsonObject &jsobj);
+    static item_requirement from_json(JsonObject &jsobj);
 
     bool has(const inventory &crafting_inv, int batch = 1) const;
     std::string to_string(int batch = 1) const;
@@ -94,8 +72,11 @@ struct skill_requirement {
           base_success(_base_success) { }
 
     void load(JsonObject &json_obj);
+    static skill_requirement from_json(JsonObject &json_obj);
+
     bool meets_minimum(const player& _player) const;
     double success_rate(const player& _player, double difficulty_modifier = 0.0f) const;
+
     std::string to_string() const;
     std::string get_color(const player& _player) const;
 };
@@ -124,9 +105,10 @@ struct quality_requirement {
     std::string get_color(bool has_one, const inventory &crafting_inv, int = 0) const;
 };
 
+// TODO: Finish updating/rewriting this(not too useful anyway) comment chunk:
 /**
  * The *_vector members represent list of alternatives requirements:
- * alter_tool_comp_vector = { * { { a, b }, { c, d } }
+ * alter_item_req_vector = { * { { a, b }, { c, d } }
  * That means: the player needs (requirement a or b) and (requirement c or d).
  *
  * Some functions in this struct use template arguments so they can be
@@ -134,11 +116,11 @@ struct quality_requirement {
  * check_consistency iterates over all entries in the supplied vector and calls
  * check_consistency on each entry.
  * If called as <code>check_consistency(tools)</code> this will actually call
- * tool_comp::check_consistency. If called as
+ * item_requirement::check_consistency. If called as
  * <code>check_consistency(qualities)</code> it will call
  * quality_requirement:check_consistency.
  *
- * Requirements (item_comp, tool_comp, quality_requirement) must have those
+ * Requirements (item_requirement, quality_requirement) must have those
  * functions:
  * Load from the next entry of the json array:
  *   void load(JsonArray &jarr);
@@ -154,14 +136,13 @@ struct quality_requirement {
  *   std::string get_color(bool has_one, const inventory &crafting_inv) const;
 */
 struct requirement_data {
-        typedef std::vector< std::vector<tool_comp> > alter_tool_comp_vector;
-        typedef std::vector< std::vector<item_comp> > alter_item_comp_vector;
+        typedef std::vector< std::vector<item_requirement> > alter_item_req_vector;
         typedef std::vector< std::vector<quality_requirement> > alter_quali_req_vector;
         typedef std::map<std::string, skill_requirement> skill_req_map;
 
-        alter_tool_comp_vector tools;
+        alter_item_req_vector tools;
         alter_quali_req_vector qualities;
-        alter_item_comp_vector components;
+        alter_item_req_vector components;
         skill_req_map skills;
 
         /**
@@ -245,7 +226,7 @@ struct requirement_data {
 
     private:
         bool check_enough_materials(const inventory &crafting_inv, int batch = 1) const;
-        bool check_enough_materials(const item_comp &comp, const inventory &crafting_inv, int batch = 1) const;
+        bool check_enough_materials(const item_requirement &comp, const inventory &crafting_inv, int batch = 1) const;
 
         void load_skill_requirements(JsonObject& js_obj);
 
@@ -269,7 +250,7 @@ struct requirement_data {
         template<typename T>
         static bool any_marked_available(const std::vector<T> &comps);
         template<typename T>
-        static void load_obj_list(JsonArray &jsarr, std::vector< std::vector<T> > &objs);
+        static void load_obj_list(JsonArray &jsarr, std::vector< std::vector<T> > &objs, bool is_tool = false);
         template<typename T>
         static const T *find_by_type(const std::vector< std::vector<T> > &vec, const std::string &type);
 };
