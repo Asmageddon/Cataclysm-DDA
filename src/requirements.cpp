@@ -51,8 +51,13 @@ void skill_requirement::load( JsonObject &json_obj )
     skill = Skill::skill(skill_name);
     difficulty = json_obj.get_int("difficulty"); // Mandatory
     minimum = json_obj.has_member("min") ? json_obj.get_int("min") : difficulty;
-    base_success = json_obj.has_member("base_success") ? json_obj.get_float("base_success") : 0.55f;
-    stat_factor  = json_obj.has_member("stat_factor") ? json_obj.get_float("stat_factor") : 0.75f;
+
+    if(json_obj.has_member("base_success")) {
+        base_success = json_obj.get_float("base_success");
+    }
+    if(json_obj.has_member("stat_factor")) {
+        stat_factor = json_obj.get_float("stat_factor");
+    }
 }
 
 skill_requirement skill_requirement::from_json( JsonObject &jsobj )
@@ -172,9 +177,15 @@ void load_requirement_alternative_list(JsonObject &jsobj, std::string from_field
     while(jsarr.has_more())
     {
         into.push_back(std::vector<T>());
-        JsonArray subarray = jsarr.next_array();
-        while(subarray.has_more()) {
-            JsonObject req_obj = subarray.next_object();
+        if(jsarr.test_array()) {
+            JsonArray subarray = jsarr.next_array();
+            while(subarray.has_more()) {
+                JsonObject req_obj = subarray.next_object();
+                auto req = T::from_json(req_obj);
+                into.back().push_back(req);
+            }
+        } else {
+            JsonObject req_obj = jsarr.next_object();
             auto req = T::from_json(req_obj);
             into.back().push_back(req);
         }
@@ -193,7 +204,7 @@ void requirement_data::load( JsonObject &jsobj )
             while(jsarr.has_more()) {
                 JsonObject skill_req_obj = jsarr.next_object();
                 skill_requirement req = skill_requirement::from_json(skill_req_obj);
-                skills[req.skill->name()] = req;
+                skills[req.skill->ident()] = req;
             }
         }
     } else {
@@ -225,7 +236,6 @@ void requirement_data::load_skill_requirements(JsonObject& js_obj) {
         req.skill = skill;
         req.difficulty = js_obj.get_int( "difficulty" );;
         req.minimum = req.difficulty;
-        req.base_success = 0.55f;
         skills[skill_name] = req;
     }
 
@@ -240,7 +250,6 @@ void requirement_data::load_skill_requirements(JsonObject& js_obj) {
                 req.skill = skill;
                 req.difficulty = ja.get_int(1);
                 req.minimum = ja.get_int(1);
-                req.base_success = 0.55f;
                 skills[ja.get_string(0)] = req;
             }
         } else {

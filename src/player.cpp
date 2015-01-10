@@ -13184,7 +13184,7 @@ SkillLevel player::get_skill_level(const std::string &skill_name) const
 double player::get_adjusted_skill_level(const Skill *_skill, bool include_progress) const
 {
     auto skill_level = get_skill_level(_skill);
-    auto skill_name = _skill->name();
+    auto skill_name = _skill->ident();
     double raw_skill_level, adjusted_level;
     if (include_progress) {
         raw_skill_level = skill_level.level() + skill_level.exercise() / 100.0f;
